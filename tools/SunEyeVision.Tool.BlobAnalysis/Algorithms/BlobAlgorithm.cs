@@ -219,9 +219,9 @@ public sealed partial class BlobAlgorithm : IToolSession<BlobSettings, BlobOutpu
         using var imageMaskRegion = imageMask is null ? null : CreateImageMaskRegion(imageMask, width, height);
         timing.Mark("image-mask-ready");
         using var inspectionRegion = imageMaskRegion is not null ? imageMaskRegion.Clone()
-            : localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,RoiDocumentValue.Inspection,domain,cancellation,clipToInputDomain:pose is null)
+            : localRoi is not null?RoiDocumentRasterizer.Build(localRoi,RoiDocumentValue.Inspection,domain,cancellation,clipToInputDomain:pose is null)
             :inspection is null ? domain.Clone() : HalconResourceBridge.CopyRegion(inspection, frame, width, height);
-        using var maskRegion = localRoi is not null?BlobLocalRoiRasterizer.Build(localRoi,RoiDocumentValue.Mask,domain,cancellation,clipToInputDomain:pose is null)
+        using var maskRegion = localRoi is not null?RoiDocumentRasterizer.Build(localRoi,RoiDocumentValue.Mask,domain,cancellation,clipToInputDomain:pose is null)
             :mask is null ? EmptyRegion() : HalconResourceBridge.CopyRegion(mask, frame, width, height);
         var correctInspection = inspection is not null || localRoi is not null && RoiDocumentValue.Coverage(localRoi,RoiDocumentValue.Inspection)==RoiDocumentValue.Explicit;
         using var correctedInspection = correctInspection ? HalconResourceBridge.TransformRegion(inspectionRegion, pose) : inspectionRegion.Clone();
@@ -233,7 +233,7 @@ public sealed partial class BlobAlgorithm : IToolSession<BlobSettings, BlobOutpu
         // Keep the geometric ROI and generated output mask on the nominal domain.
         using var directRectangleInterior = width > 2 && height > 2 && pose is null && localRoi is not null
             && settings.SegmentationMode == BlobSegmentationMode.SingleThreshold && settings.Type == BlobThresholdMode.Binary
-            && BlobLocalRoiRasterizer.IsDirectFullFrameRectangle(localRoi, width, height)
+            && RoiDocumentRasterizer.IsDirectFullFrameRectangle(localRoi, width, height)
                 ? HalconResourceBridge.CreateWithoutImplicitClipping(() => new HRegion(1d, 1d, height - 1d, width - 1d))
                 : null;
         using var thresholdDomain = directRectangleInterior is null ? null : effectiveDomain.Intersection(directRectangleInterior);
@@ -371,8 +371,8 @@ public sealed partial class BlobAlgorithm : IToolSession<BlobSettings, BlobOutpu
             if (resultGeometry.Groups.Any(group => group.Coverage == ResultGeometryCoverage.Unavailable))
                 executionDiagnostics.Add(new("BLOB_ROI_DISPLAY_UNAVAILABLE", "部分像素区域无法在当前边界预算内完整显示。"));
             timing.Mark("result-geometry");
-            var output = new BlobOutput(settings, transformed.Receipt, executionDiagnostics, judged.Select((entry,index)=>new BlobSelectionEntry(entry.Candidate.ComponentLabel,entry.Candidate.RegionIndex,entry.Slot,index+1)), measurements, blobImage, binaryOutput, maskOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources }, resultGeometry,maskPolygons,
-                vm.BlobContourType!=BlobContourType.NoneContour,cancellation,moduleStarted);
+            var output = new BlobOutput(settings, transformed.Receipt, executionDiagnostics, judged.Select((entry,index)=>new BlobSelectionEntry(entry.Candidate.ComponentLabel,entry.Candidate.RegionIndex,entry.Slot,index+1)), measurements, blobImage, binaryOutput, maskOutput, regionOutput, okOutput, ngOutput, whiteRatio, histogram, means, isPass, messages, new[] { outputResources }, resultGeometry,
+                maskPolygons, vm.BlobContourType!=BlobContourType.NoneContour,cancellation,moduleStarted);
             cancellation.ThrowIfCancellationRequested();
             timing.Mark("blob-output-constructed");
             return output;
@@ -736,78 +736,6 @@ internal sealed class BlobDiagnostics : IDisposable
     public void Dispose(){if(!_enabled||_disposed)return;_disposed=true;_clock!.Stop();_log!($"[ExecTimingProbe] tool=blob node={_node} total={_clock.ElapsedMilliseconds}ms stages={string.Join("/",_stages!.Select(x=>x.Stage+"="+x.Ms+"ms"))}");}
 }
 
-/// <summary>One invocation-local rasterization of the persistent input-slot geometry. No resource escapes.</summary>
-internal static class BlobLocalRoiRasterizer
-{
-    internal static bool IsDirectFullFrameRectangle(RecordValue definition, int width, int height)
-    {
-        if (RoiDocumentValue.Coverage(definition, RoiDocumentValue.Mask) != RoiDocumentValue.None)
-            return false;
-        if (RoiDocumentValue.Coverage(definition, RoiDocumentValue.Inspection) == RoiDocumentValue.FullDomain)
-            return true;
-        var items = RoiDocumentValue.Items(definition, RoiDocumentValue.Inspection);
-        if (items.Count != 1 || !items[0].Get<bool>("enabled"))
-            return false;
-        var shape = items[0].Get<RecordValue>("shape");
-        if (shape.Get<string>("kind") != "rectangle")
-            return false;
-        var center = shape.Get<RecordValue>("center");
-        return center.Get<double>("x") == width / 2d && center.Get<double>("y") == height / 2d
-            && shape.Get<double>("width") == width && shape.Get<double>("height") == height
-            && RoiDocumentValue.NormalizeDegrees(shape.Get<double>("angle-degrees")) == 0d;
-    }
-
-    // The invocation validates the definition before rasterization. Result subsets come from that same definition.
-    internal static HRegion Build(RecordValue definition,string group,HRegion inputDomain,CancellationToken cancellation,bool clipToInputDomain=true)
-        => clipToInputDomain ? BuildCore(definition,group,inputDomain,cancellation,true)
-            : HalconResourceBridge.CreateWithoutImplicitClipping(() => BuildCore(definition,group,inputDomain,cancellation,false));
-
-    private static HRegion BuildCore(RecordValue definition,string group,HRegion inputDomain,CancellationToken cancellation,bool clipToInputDomain)
-    {
-        var coverage=RoiDocumentValue.Coverage(definition,group);
-        if(coverage==RoiDocumentValue.FullDomain)return inputDomain.Clone();
-        HOperatorSet.GenEmptyRegion(out var empty);
-        var union=new HRegion(empty);empty.Dispose();
-        try
-        {
-            if(coverage==RoiDocumentValue.None)return union.Clone();
-            foreach(var item in RoiDocumentValue.Items(definition,group))
-            {
-                cancellation.ThrowIfCancellationRequested();if(!item.Get<bool>("enabled"))continue;
-                using var region=Shape(item.Get<RecordValue>("shape"));using var next=union.Union2(region);
-                var replacement=next.Clone();union.Dispose();union=replacement;
-            }
-            return clipToInputDomain ? union.Intersection(inputDomain) : union.Clone();
-        }
-        finally{union.Dispose();}
-    }
-    private static HRegion Shape(RecordValue shape)
-    {
-        var kind=shape.Get<string>("kind");
-        if(kind=="polygon")
-        {
-            var points=shape.Get<SequenceValue>("vertices").Cast<RecordValue>().ToArray();
-            using var rows=new HTuple(points.Select(p=>p.Get<double>("y")).ToArray());using var cols=new HTuple(points.Select(p=>p.Get<double>("x")).ToArray());
-            HOperatorSet.GenRegionPolygonFilled(out var polygon,rows,cols);using(polygon)return new HRegion(polygon);
-        }
-        var center=shape.Get<RecordValue>("center");var y=center.Get<double>("y");var x=center.Get<double>("x");
-        if(kind=="rectangle")
-        {
-            HOperatorSet.GenRectangle2(out var rectangle,y,x,-RoiDocumentValue.NormalizeDegrees(shape.Get<double>("angle-degrees"))*Math.PI/180,shape.Get<double>("width")/2,shape.Get<double>("height")/2);
-            using(rectangle)return new HRegion(rectangle);
-        }
-        var start=shape.Get<double>("start-radians");var end=shape.Get<double>("end-radians");var sweep=end-start;
-        // A negative screen sweep occupies [end,start]. HALCON's positive mathematical interval reverses screen Y.
-        if(sweep<0)(start,end)=(end,start);
-        using var outer=Math.Abs(Math.Abs(sweep)-2*Math.PI)<=1e-9
-            ?new HRegion(y,x,shape.Get<double>("outer-radius"))
-            :new HRegion(y,x,shape.Get<double>("outer-radius"),Normalize(-end),Normalize(-start));
-        var innerRadius=shape.Get<double>("inner-radius");
-        if(innerRadius==0)return outer.Clone();
-        using var inner=new HRegion(y,x,innerRadius);return outer.Difference(inner);
-    }
-    private static double Normalize(double value)=>(value%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
-}
 
 internal static class BlobNumericSemantics
 {
@@ -923,7 +851,7 @@ internal static class BlobResultGeometry
             // Reuse the invocation rasterizer for mixed inspection roles, preserving their independent display switches.
             var subset = RoiDocumentValue.Root(RoiDocumentValue.Group(RoiDocumentValue.Explicit, items),
                 RoiDocumentValue.Group(RoiDocumentValue.None, Array.Empty<RecordValue>()));
-            using var original = BlobLocalRoiRasterizer.Build(subset, RoiDocumentValue.Inspection, domain, cancellation,
+            using var original = RoiDocumentRasterizer.Build(subset, RoiDocumentValue.Inspection, domain, cancellation,
                 clipToInputDomain: false);
             using var corrected = HalconResourceBridge.TransformRegion(original, pose);
             return Raster(role, corrected);

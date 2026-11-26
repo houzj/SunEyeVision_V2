@@ -20,6 +20,18 @@ public enum MarkFindThresholdMode
 }
 
 /// <summary>
+/// 原件 <c>MatchThresholdFlag</c>（IMVSMarkFindModuAlgorithmTab.xml 的 Enumeration，
+/// EnumEntrys = Auto / Model / Manual，CurValue 默认 0）。
+/// 其 MultiTrigger 声明「CurValue=2（Manual）且 CustomVisible=True → 显示 MatchThresholdHigh」。
+/// </summary>
+public enum MarkFindMatchThresholdMode
+{
+    Auto = 0,
+    Model = 1,
+    Manual = 2
+}
+
+/// <summary>
 /// 原件「定位方式」（FeatureMatchType，0=IMVSFastFeatureMatchModu、1=IMVSHPFeatureMatchModu）。
 /// 快速匹配不显示特征尺度（MarkFindDialogUI.xaml.cs:1367 把第 3 行高度置 0）。
 /// </summary>
@@ -96,8 +108,8 @@ public sealed record MarkFindSettings : IToolSettings<MarkFindSettings>
     public double ScaleYEnd { get; init; } = 1;
     public int MaxOverlap { get; init; } = 80;
     public MarkFindSortType SortType { get; init; } = MarkFindSortType.Descend;
-    /// <summary>原件 MatchThresholdFlag：默认 0（关闭）。取值语义未取证，非 0 明确拒绝。</summary>
-    public int MatchThresholdMode { get; init; }
+    /// <summary>原件 MatchThresholdFlag：Auto / Model / Manual（默认 Auto）。</summary>
+    public MarkFindMatchThresholdMode MatchThresholdMode { get; init; } = MarkFindMatchThresholdMode.Auto;
     public int MatchThreshold { get; init; } = 40;
     /// <summary>原件 SpotterFlag：默认 False。语义未取证，启用即拒绝。</summary>
     public bool SpotterEnabled { get; init; }
@@ -182,8 +194,7 @@ public sealed record MarkFindSettings : IToolSettings<MarkFindSettings>
             Fail("MARKFIND_SCALE_NOT_READY", "缩放范围依赖原件缩放搜索语义，HALCON 形状模板不支持，暂只支持 1。", MarkFindFields.ScaleStart);
         if (ScaleXStart != 1 || ScaleXEnd != 1 || ScaleYStart != 1 || ScaleYEnd != 1)
             Fail("MARKFIND_SCALE_NOT_READY", "X/Y 缩放范围依赖原件缩放搜索语义，暂只支持 1。", MarkFindFields.ScaleXStart);
-        if (MatchThresholdMode != 0)
-            Fail("MARKFIND_MATCH_THRESHOLD_NOT_READY", "匹配阈值使能语义尚未取证，暂只支持关闭（0）。", MarkFindFields.MatchThresholdMode);
+        // MatchThresholdFlag 的三态语义已按原厂取证（Auto/Model/Manual），不再拒绝非 0 取值。
         if (SpotterEnabled)
             Fail("MARKFIND_SPOTTER_NOT_READY", "斑点定位语义尚未取证，暂不支持启用。", MarkFindFields.SpotterEnabled);
         if (MatchExtentRate != 0)

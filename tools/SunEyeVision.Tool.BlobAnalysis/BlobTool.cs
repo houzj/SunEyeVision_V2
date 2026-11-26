@@ -3,16 +3,21 @@ using SunEyeVision.Plugin.Contracts.Results.Presentation;
 using SunEyeVision.Plugin.Contracts;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Results;
+using SunEyeVision.Tool.BlobAnalysis.Wpf.Views;
 
 namespace SunEyeVision.Tool.BlobAnalysis.Runtime
 {
 
 /// <summary>Blob runtime entry. One invocation only; workflow scheduling belongs to the host.</summary>
-public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs,IToolResultDisplayProvider,IToolDormantParameterDefaults,IToolFieldTransitions,IToolRuntimeInitialization
+public sealed class BlobTool : IToolDefinition<BlobSettings, BlobOutput>, IToolResultPresentationProvider, IToolSettingsFields, IToolCatalogProvider,IToolParameterBindingNames,IToolManualReferenceSources,IToolKnownSettingsValidation,IToolParameterReferenceBehavior,IToolExecutionInputs,IToolResultDisplayProvider,IToolDormantParameterDefaults,IToolFieldTransitions,IToolRuntimeInitialization,IToolResultOutlineDeclaration
 {
     public const string Id = "BlobAnalysis";
     public const string ImageInput = "input.image";
     public const string PoseInput = "input.pose";
+    /// <summary>轮廓点出口（系统类型 IToolResultOutlineDeclaration）。</summary>
+    public string OutlinePortId => BlobSchema.ContourPointsPort;
+    /// <summary>结果视图与参数页共用的 ROI 编辑声明。</summary>
+    public RoiEditDeclaration RoiEdit => BlobRoiDeclaration.Declaration;
     public IReadOnlyList<ManualReferenceSource> ManualReferenceSources {get;} =
         Array.AsReadOnly(new[] {11,12,19,20,23,24}.Select(id=>new ManualReferenceSource(BlobSchema.Field(id)))
             .Append(new ManualReferenceSource(BlobSchema.ModuleStatusPort))

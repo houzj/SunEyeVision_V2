@@ -90,7 +90,8 @@ public sealed record BlobMeasurement(long ElementId, int Label, double Area, dou
     IReadOnlyList<Point2>? UnorderedContour = null, BlobOrientedBounds? InnerRectangle = null);
 
 /// <summary>One final ordered result set. Independent resource readers can outlive this output owner.</summary>
-public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOutput, IToolResultRecordOutput
+public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOutput, IToolResultRecordOutput,
+    IToolResultOutlineOutput
 {
     private readonly IDisposable[] _owned;
     private readonly Dictionary<string,object?> _values;
@@ -106,6 +107,7 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
         SequenceValue maskPolygons, bool publishContour, CancellationToken cancellation, long moduleStarted)
     {
         ResultGeometry=resultGeometry;
+        ResultOutline=BuildOutline(measurements,resultGeometry.SourceFrame,publishContour);
         MaskPolygons=maskPolygons;
         ThresholdExecution=threshold;ExecutionDiagnostics=Array.AsReadOnly(diagnostics.ToArray());
         SelectionExecution=Array.AsReadOnly(selection.ToArray());
@@ -123,7 +125,26 @@ public sealed class BlobOutput : IToolOutput, IDisposable, IToolResultGeometryOu
         _ = new InputValues(BlobSchema.Outputs, _values);
     }
     public ResultGeometrySnapshot ResultGeometry {get;}
+    /// <summary>系统级轮廓点（原件 CONTOURPOINTS 的统一点集形态）。</summary>
+    public ResultOutlineSet? ResultOutline {get;}
     public SequenceValue MaskPolygons {get;}
+    private static ResultOutlineSet? BuildOutline(IEnumerable<BlobMeasurement> measurements, ImageFrameAddress frame,
+        bool publishContour)
+    {
+        if(!publishContour)return null;
+        var points=new List<Point2>();var indices=new List<int>();var scores=new List<float>();
+        var blobIndex=0;
+        foreach(var blob in measurements)
+        {
+            foreach(var point in BlobSchema.OutlinePoints(blob))
+            {
+                points.Add(point);indices.Add(blobIndex);
+                scores.Add(blob.JudgmentPassed?0f:2f);
+            }
+            blobIndex++;
+        }
+        return points.Count==0?null:new ResultOutlineSet(frame,points,indices,scores);
+    }
     public IReadOnlyList<BlobMeasurement> Measurements { get; }
     /// <summary>VM BlobFindResult 的中立投影，Unavailable 中的成员没有本方等价资源。</summary>
     public BlobResultProjection ResultProjection { get; }
@@ -259,8 +280,8 @@ public static class BlobResultDisplay
     public static ResultDisplayDescriptor Descriptor {get;}=new(new(BlobSchema.BlobsPort),new(BlobSchema.BlobsPort,new[]{"element-id"}),
         new(BlobSchema.BlobsPort,new[]{"oriented-bounds"}),new(BlobSchema.BlobsPort,new[]{"region"}),
         new(BlobSchema.BlobsPort,new[]{"area"}),new(BlobSchema.BlobsPort,new[]{"judgment-passed"}),
-        outline:null, innerRectangle:new(BlobSchema.BlobsPort,new[]{"inner-rectangle"}), selectedRectangleColor:new(255,255,0),
-        centroid:new(BlobSchema.BlobsPort,new[]{"centroid"}), globalOutline:new(BlobSchema.ContourPointsPort));
+        innerRectangle:new(BlobSchema.BlobsPort,new[]{"inner-rectangle"}), selectedRectangleColor:new(255,255,0),
+        centroid:new(BlobSchema.BlobsPort,new[]{"centroid"}));
     public static InputValues Defaults()=>new(Schema.Inputs,Definitions.ToDictionary(item=>item.Port.Id,item=>(object?)item.Value,StringComparer.Ordinal));
     private static IReadOnlyList<Definition> Build()
     {
@@ -271,7 +292,7 @@ public static class BlobResultDisplay
             var modes=id==Field(Text,"content")?FieldEditModes.Constant|FieldEditModes.DisplayExpression:
                 id==Field(Text,"x")||id==Field(Text,"y")?FieldEditModes.Constant|FieldEditModes.Reference:FieldEditModes.Constant;
             var port=new Port(id,type,EditModes:modes);
-            result.Add(new(port,new(id,label,section,displayOrder+result.Count,type.Shape==ValueShape.Record?FieldEditorKind.Record:FieldEditorKind.Scalar){Layout=new("结果显示",section,
+            result.Add(new(port,new(id,label,section,displayOrder+result.Count,type.Shape==ValueShape.Record?FieldEditorKind.Record : FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.FromPort(type, type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar)){Layout=new("结果显示",section,
                 Minimum:minimum,Maximum:maximum,Increment:increment??1,DecimalPlaces:type==DataType.Number?decimals:0,
                 DialogGroup:dialog,DialogTitle:dialog is null?null:dialog switch
                 {
@@ -768,9 +789,17 @@ public static class BlobPresentation
   string? Id(string logical)=>ids.TryGetValue(logical,out var id)?id:null;
   void When(string logical,object value){if(Id(logical) is {} id)condition=new(id,value);}
   if(key is "setting.Threshold" or "setting.UpperThreshold"){minimum=0;maximum=255;decimals=0;}
-  if(key=="setting.Threshold")condition=new(ids["setting.SegmentationMode"],"None",true);
-  if(key=="setting.Type")condition=new(ids["setting.SegmentationMode"],"DoubleThreshold",true);
-  if(key=="setting.UpperThreshold")When("setting.SegmentationMode", "DoubleThreshold");
+  // 证据 IMVSBlobFindModuAlgorithmTab.xml 的 ThresholdType（EnumEntry 的 Value）：
+  //   1=BinaryImage 2=SingleThreshold 3=DoubleThreshold 4=AutoThreshold
+  //   5=FixedSoftThreshold 6=RelativeSoftThreshold
+  // 同一控件在多个类型下都显示（原厂 MultiTrigger），故用多值条件。
+  var segmentation=ids["setting.SegmentationMode"];
+  if(key=="setting.Threshold")
+      condition=new(segmentation,new object?[]{"SingleThreshold","DoubleThreshold","AutoThreshold"});
+  if(key=="setting.UpperThreshold")
+      condition=new(segmentation,new object?[]{"DoubleThreshold","AutoThreshold"});
+  // 极性：AutoThreshold 由算法自定极性（原厂 0x4 无 Polarity），其余类型都显示。
+  if(key=="setting.Type")condition=new(segmentation,"AutoThreshold",true);
   if(key.StartsWith("setting.Filter"))
   {
    section="Blob筛选";
@@ -804,6 +833,10 @@ public static class BlobPresentation
    page=definition.Page(id);section=definition.Section(id);minimum=definition.Minimum(id);maximum=definition.Maximum(id);
    decimals=definition.DecimalPlaces(id);increment=definition.Increment(id);
   }
-  return new(page,section,condition,paired,advanced,minimum,maximum,decimals,allowReference,dialog,title,primary,increment);
+  // 证据 IMVSBlobAnalysisModuAlgorithmTab.xml：Tab_ROI Area / Tab_Run Params / Tab_Check Result
+  // 三个 Category 标 CanTriggerRun="TRUE"；本函数产出的页与之逐一对应，故三页均标可触发运行。
+  var canTriggerRun=page is "基本参数" or "运行参数" or "结果显示";
+  return new(page,section,condition,paired,advanced,minimum,maximum,decimals,allowReference,dialog,title,primary,increment,
+      CanTriggerRun:canTriggerRun);
  }
 }

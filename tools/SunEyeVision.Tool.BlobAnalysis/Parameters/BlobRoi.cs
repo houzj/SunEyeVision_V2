@@ -179,6 +179,21 @@ namespace SunEyeVision.Tool.BlobAnalysis.Wpf.Views
 /// <summary>ROI 编辑的字段与组声明：读写、提案与历史由平台 RoiDocumentStore 承担。</summary>
 internal static class BlobRoiDeclaration
 {
+    /// <summary>结果视图与参数页共用的 ROI 编辑声明（原件 ROISelecter 常驻语义）。</summary>
+    internal static RoiEditDeclaration Declaration { get; } = new(
+        BlobLocalRoi.InputId, BlobTool.ImageInput,
+        new[]
+        {
+            new RoiEditGroupDeclaration(RoiDocumentValue.Inspection, "形状", false,
+                BlobLocalRoi.MaximumLocalInspectionCount, RoiDocumentValue.FullDomain),
+            new RoiEditGroupDeclaration(RoiDocumentValue.Mask, "屏蔽区", true,
+                BlobLocalRoi.MaximumLocalMaskCount, RoiDocumentValue.None)
+        },
+        Inheritance: BlobRoiInheritance.Spec,
+        MaskInheritance: new RoiMaskInheritanceDeclaration(BlobMaskInheritance.ModeId, BlobMaskInheritance.SourceId,
+            BlobLocalRoi.MaximumInheritedCount),
+        ItemNames: new[] { "检测区域", "屏蔽区域" });
+
     internal static IReadOnlyList<NativeRoiEditGroup> Groups { get; } = Array.AsReadOnly(new[]
     {
         new NativeRoiEditGroup(RoiDocumentValue.Inspection, "形状", false,

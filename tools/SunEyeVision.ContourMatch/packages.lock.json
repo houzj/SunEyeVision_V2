@@ -125,6 +125,13 @@
           "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )"
         }
       },
+      "suneyevision.plugin.templatestudio": {
+        "type": "Project",
+        "dependencies": {
+          "SunEyeVision.Plugin.Contracts": "[2.0.0-alpha.8, )",
+          "SunEyeVision.Plugin.Wpf": "[2.0.0-alpha.8, )"
+        }
+      },
       "suneyevision.plugin.wpf": {
         "type": "Project",
         "dependencies": {

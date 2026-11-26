@@ -15,9 +15,34 @@ public static class BlobLabelsRoi
 {
     public const string LocalDocumentId = "input.roi.local";
     public const string ModeId = "input.roi.inheritance-mode";
+
+    public static RoiInheritanceSpec Inheritance { get; } = new(
+        ModeId, Local,
+        new(Rectangle, "RectangleParameters", RectangleSource,
+            new[] { "center-x", "center-y", "width", "height", "angle-degrees" }, "rectangle"),
+        new(Annulus, "AnnulusParameters", AnnulusSource,
+            new[] { "center-x", "center-y", "inner-radius", "outer-radius", "start-degrees", "sweep-degrees" }, "annulus"),
+        RoiDocumentValue.MaximumInheritedCount);
+
+    /// <summary>结果视图与参数页共用的 ROI 编辑声明（原件 ROISelecter 常驻语义）。</summary>
+    public static RoiEditDeclaration RoiEdit { get; } = new(
+        LocalDocumentId, BlobLabelsSchema.ImageInput,
+        new[]
+        {
+            new RoiEditGroupDeclaration(RoiDocumentValue.Inspection, "形状", false,
+                BlobLabelsLocalRoi.MaximumInspectionCount, RoiDocumentValue.FullDomain),
+            new RoiEditGroupDeclaration(RoiDocumentValue.Mask, "屏蔽区", true,
+                BlobLabelsLocalRoi.MaximumMaskCount, RoiDocumentValue.None)
+        },
+        Inheritance: Inheritance,
+        MaskInheritance: new RoiMaskInheritanceDeclaration(MaskInherited, BlobLabelsSchema.MaskRegionInput,
+            RoiDocumentValue.MaximumInheritedCount),
+        ItemNames: new[] { "检测区域", "屏蔽区域" });
     public const string Local = "Local";
     public const string Rectangle = "Rectangle";
+    public const string RectangleParameters = "RectangleParameters";
     public const string Annulus = "Annulus";
+    public const string AnnulusParameters = "AnnulusParameters";
     public static string RectangleSource => BlobLabelsSchema.InspectionRoiInput;
     public static string AnnulusSource => BlobLabelsSchema.AnnulusRoiInput;
     public const string AreaType = "input.roi.area-type";
@@ -57,6 +82,54 @@ public static class BlobLabelsRoi
         .Select(id => new Port(AnnulusSource + "." + id, DataType.Number,
             Required: false, EditModes: FieldEditModes.Reference)))
     .ToArray();
+
+    public static RecordValue Materialize(InputValues inputs, RecordValue? local)
+    {
+        var mode = inputs.Contains(ModeId) ? inputs.Get<string>(ModeId) : Local;
+        if (mode == Local) return local ?? RoiDocumentValue.Empty;
+        RecordValue shape;
+        double Number(string id)
+        {
+            var value = inputs.Get<double>(id);
+            if (!double.IsFinite(value)) throw new ArgumentException("ROI继承参数必须有限。", id);
+            return value;
+        }
+        if (mode == RectangleParameters)
+        {
+            shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+            {
+                ["kind"] = "rectangle",
+                ["center"] = RoiDocumentValue.Point(Number(RectangleSource + ".center-x"), Number(RectangleSource + ".center-y")),
+                ["width"] = Number(RectangleSource + ".width"),
+                ["height"] = Number(RectangleSource + ".height"),
+                ["angle-degrees"] = Number(RectangleSource + ".angle-degrees")
+            });
+        }
+        else if (mode == AnnulusParameters)
+        {
+            var start = RoiDocumentValue.NormalizeDegrees(Number(AnnulusSource + ".start-degrees")) * Math.PI / 180d;
+            var sweep = Number(AnnulusSource + ".sweep-degrees");
+            if (Math.Abs(sweep) > 360) throw new ArgumentException("圆环继承角度范围不能超过 360 度。", AnnulusSource);
+            shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+            {
+                ["kind"] = "annulus",
+                ["center"] = RoiDocumentValue.Point(Number(AnnulusSource + ".center-x"), Number(AnnulusSource + ".center-y")),
+                ["inner-radius"] = Number(AnnulusSource + ".inner-radius"),
+                ["outer-radius"] = Number(AnnulusSource + ".outer-radius"),
+                ["start-radians"] = start,
+                ["end-radians"] = start + sweep * Math.PI / 180d
+            });
+        }
+        else
+        {
+            throw new ArgumentException("当前 BlobLabels 继承模式需要区域输入，不能物化为结果 ROI。", ModeId);
+        }
+        RoiDocumentValue.ValidateShape(shape);
+        return RoiDocumentValue.Root(
+            RoiDocumentValue.Group(RoiDocumentValue.Explicit,
+                new[] { RoiDocumentValue.Item(new Guid("c8a845d3-1695-4761-ac6b-165fe86dc248"), "继承区域", shape) }),
+            (local ?? RoiDocumentValue.Empty).Get<RecordValue>(RoiDocumentValue.Mask));
+    }
 
     public static NativeRoiUiDraftControls Add(DeclaredInputFieldsView inputs,
         Action<string, FrameworkElement, string?> attach,
@@ -114,20 +187,12 @@ internal static class BlobLabelsLocalRoi
             MaximumMaskCount, RoiDocumentValue.None)
     });
 
-    private static RoiInheritanceSpec Inheritance { get; } = new(
-        BlobLabelsRoi.ModeId, BlobLabelsRoi.Local,
-        new(BlobLabelsRoi.Rectangle, "RectangleParameters", BlobLabelsRoi.RectangleSource,
-            new[] { "center-x", "center-y", "width", "height", "angle-degrees" }, "rectangle"),
-        new(BlobLabelsRoi.Annulus, "AnnulusParameters", BlobLabelsRoi.AnnulusSource,
-            new[] { "center-x", "center-y", "inner-radius", "outer-radius", "start-degrees", "sweep-degrees" }, "annulus"),
-        RoiDocumentValue.MaximumInheritedCount);
-
     private static MaskInheritanceSpec MaskInheritance { get; } = new(
         BlobLabelsRoi.MaskInherited, BlobLabelsSchema.MaskRegionInput, RoiDocumentValue.MaximumInheritedCount);
 
     public static INativeRoiEditDocument Create(DeclaredInputFieldsView inputs) => new RoiDocumentStore(
         inputs, BlobLabelsRoi.LocalDocumentId, Groups, BlobLabelsSchema.ImageInput,
-        Inheritance, MaskInheritance, new[] { "检测区域", "屏蔽区域" });
+        BlobLabelsRoi.Inheritance, MaskInheritance, new[] { "检测区域", "屏蔽区域" });
 }
 
 /// <summary>BlobLabels 原厂 AssistGroup 的模式和来源字段声明。</summary>

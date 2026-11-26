@@ -37,7 +37,7 @@ public static class BlobLabelsResultDisplay
         new(BlobLabelsSchema.Rows, new[] { "region" }),
         new(BlobLabelsSchema.Rows, new[] { "area" }),
         new(BlobLabelsSchema.Rows, new[] { "judgment-passed" }),
-        outline: new(BlobLabelsSchema.Rows, new[] { "contour" }),
+        // 轮廓点由系统类型（IToolResultOutlineOutput）承载，显示合同不再声明通道。
         selectedRectangleColor: new(255, 255, 0),
         centroid: new(BlobLabelsSchema.Rows, new[] { "centroid" }));
 
@@ -57,7 +57,7 @@ public static class BlobLabelsResultDisplay
                 : FieldEditModes.Constant;
             var port = new Port(id, type, EditModes: modes);
             result.Add(new(port, new(id, label, section, order++,
-                type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar)
+                type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.FromPort(type, type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar))
             {
                 Layout = new FieldLayout("结果显示", section, Minimum: minimum, Maximum: maximum,
                     Increment: increment ?? 1, DecimalPlaces: type == DataType.Number ? decimals : 0,

@@ -13,7 +13,6 @@
     <ToolComponentEntryType>SunEyeVision.Tool.PixelCount.Runtime.PixelCountTool</ToolComponentEntryType>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources/PixelCountParameters.xml" LogicalName="PixelCount.PixelCountParameters.xml" />
     <EmbeddedResource Include="Resources/PixelCountAlgorithmTab.xml" LogicalName="PixelCount.PixelCountAlgorithmTab.xml" />
     <EmbeddedResource Include="Resources/PixelCountTool.xml" LogicalName="PixelCount.PixelCountTool.xml" />
     <EmbeddedResource Include="Resources/PixelCountDisplay.xml" LogicalName="PixelCount.PixelCountDisplay.xml" />

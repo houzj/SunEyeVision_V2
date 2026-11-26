@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using SunEyeVision.Plugin.TemplateStudio;
 
 namespace SunEyeVision.Tool.ContourMatch.Runtime;
 
@@ -78,6 +79,38 @@ public static class ContourMatchTemplateSet
                 throw new ContourMatchCapabilityException("CONTOURMATCH_TEMPLATE_EMPTY", "模板集合为空：请先创建模板。");
             return result.AsReadOnly();
         }
+    }
+
+    /// <summary>
+    /// 解析为共用层的模板集合（<see cref="TemplateModelCollection{TModel}"/>）。
+    /// 本方法是「线上格式 → 内存模型」的边界：<see cref="Entry"/> 是载荷格式，
+    /// <see cref="TemplateModelItem{TModel}"/> 是内存模型，两者不合并，避免格式与 UI 生命周期耦合。
+    /// </summary>
+    public static TemplateModelCollection<ContourMatchTemplate> DecodeModels(string? payload)
+    {
+        var collection = new TemplateModelCollection<ContourMatchTemplate>();
+        foreach (var entry in DecodeEntries(payload))
+        {
+            var item = collection.Add(entry.Name);
+            if (item is null) break; // 超出原厂上限 36：多出的模板不进内存集合
+            item.Model = entry.Template;
+            item.Selected = entry.Selected;
+            item.Training = entry.Training;
+        }
+        return collection;
+    }
+
+    /// <summary>把共用层模板集合编码回载荷格式。</summary>
+    public static string EncodeModels(TemplateModelCollection<ContourMatchTemplate> collection)
+    {
+        ArgumentNullException.ThrowIfNull(collection);
+        var entries = new List<Entry>(collection.Count);
+        foreach (var item in collection.Items)
+        {
+            if (item.Model is null) continue;
+            entries.Add(new Entry(item.Model, item.Name, item.Selected, item.Training ?? ""));
+        }
+        return Encode(entries);
     }
 
     /// <summary>编码模板集合；只有 1 个模板时保持旧单模型格式，避免无谓改写存量数据。</summary>

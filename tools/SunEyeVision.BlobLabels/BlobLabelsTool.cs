@@ -1,118 +1,44 @@
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
+using SunEyeVision.Plugin.Contracts.Manifest;
 using SunEyeVision.Plugin.Contracts.Results.Presentation;
 
 namespace SunEyeVision.Tool.BlobLabels.Runtime;
 
 /// <summary>
-/// Blob 标签分析（原件 <c>IMVSBlobFindLabelsModu</c>）的 Runtime 入口。
-/// 一次调用只做一次同步算法；调度、输入准备与资源生命周期属于宿主。
+/// Blob 标签分析（原件 <c>IMVSBlobFindLabelsModu</c>）。
+/// 声明与契约生成由 <see cref="ToolDefinition{TSettings,TOutput}"/> 承担；
+/// 绑定名、ROI 编辑声明、轮廓点出口与编辑期校验由工具侧实现。
 /// </summary>
-public sealed class BlobLabelsTool : IToolDefinition<BlobLabelsSettings, BlobLabelsOutput>,
-    IToolSettingsFields, IToolCatalogProvider, IToolResultPresentationProvider, IToolResultDisplayProvider,
-    IToolParameterBindingNames, IToolResourceFieldDeclarations, IToolKnownSettingsValidation, IToolRuntimeInitialization
+public sealed class BlobLabelsTool : ToolDefinition<BlobLabelsSettings, BlobLabelsOutput>,
+    IToolParameterBindingNames, IToolResourceFieldDeclarations, IToolKnownSettingsValidation,
+    IToolRuntimeInitialization, IToolResultOutlineDeclaration
 {
     public const string Id = "BlobLabels";
 
-    private static readonly ToolSchema ExecutionSchema = BuildExecutionSchema();
+    /// <summary>轮廓点出口（系统类型 IToolResultOutlineDeclaration）。</summary>
+    public string OutlinePortId => BlobLabelsSchema.ContourPoints;
 
-    public string ToolId => Id;
-    public ToolCatalogDescriptor Catalog { get; } = new("Blob标签分析", "按灰度标签分割并输出连通域特征与判定", "blob-label", "定位", 20, "DEFAULT");
-    public ToolSchema SettingsSchema => BlobLabelsFields.Schema;
+    /// <summary>结果视图与参数页共用的 ROI 编辑声明。</summary>
+    public RoiEditDeclaration RoiEdit => BlobLabelsRoi.RoiEdit;
+
+    protected override ToolManifest Manifest => BlobLabelsManifest.Value;
+
+    /// <summary>执行 Schema：描述 = 输入 + 参数 + 输出，供宿主装配。</summary>
+    public static ToolSchema Schema => new BlobLabelsTool().Describe();
+
+    /// <summary>原厂 VM 参数名 → 本工具字段身份（算法按名字取参数）。</summary>
     public IReadOnlyDictionary<string, string> ParameterBindingNames => BlobLabelsFields.BindingNames;
+
     /// <summary>本工具没有图像/文件路径类设置：掩膜与 ROI 都以输入端口引用承载。</summary>
     public IReadOnlyList<ResourceFieldDeclaration> ResourceFields { get; } = Array.Empty<ResourceFieldDeclaration>();
-    public ToolSchema ResultSchema => new(Array.Empty<Port>(), BlobLabelsSchema.Outputs, outputDisplay: BlobLabelsSchema.OutputDisplay);
-    public ToolSchema DisplaySettingsSchema => BlobLabelsResultDisplay.Schema;
-    public ResultProjectionDescriptor ResultProjection => Projection;
-    public ResultDisplayDescriptor ResultDisplay => BlobLabelsResultDisplay.Descriptor;
 
-    private static readonly ResultProjectionDescriptor Projection = BuildProjection();
+    public override IToolSession<BlobLabelsSettings, BlobLabelsOutput> CreateSession() => new BlobLabelsSession();
 
-    public ToolSchema Describe() => ExecutionSchema;
-
-    private static ToolSchema BuildExecutionSchema()
-        => new(new[]
-        {
-            new Port(BlobLabelsSchema.ImageInput, TypeRef.ResourceOf(ResourceKind.Image), EditModes: FieldEditModes.Reference),
-            // 原厂 InputMaskImageGroup 绑定图像来源引用。共享图像来源控件要求
-            // 图像端口的编辑模式严格为 Reference，常量掩膜由算法内部生成。
-            new Port(BlobLabelsSchema.MaskInput, TypeRef.ResourceOf(ResourceKind.Image), Required: false, Nullable: true,
-                EditModes: FieldEditModes.Reference),
-            new Port(BlobLabelsSchema.InspectionRoiInput, TypeRef.ResourceOf(ResourceKind.Region), Required: false, Nullable: true,
-                EditModes: FieldEditModes.Reference),
-            new Port(BlobLabelsSchema.AnnulusRoiInput, TypeRef.ResourceOf(ResourceKind.Region), Required: false, Nullable: true,
-                EditModes: FieldEditModes.Reference),
-            new Port(BlobLabelsSchema.MaskRegionInput, TypeRef.ResourceOf(ResourceKind.Region), Required: false, Nullable: true,
-                EditModes: FieldEditModes.Reference),
-            new Port(BlobLabelsSchema.FixtureInput, FixtureDeclarations.Info, Required: false, Nullable: true,
-                EditModes: FieldEditModes.Constant | FieldEditModes.Reference)
-        }
-        .Concat(BlobLabelsRoi.Ports)
-        .Concat(BlobLabelsAssist.Ports)
-        .ToArray(), BlobLabelsSchema.Outputs, new ToolPresentation(new[]
-        {
-            // 原厂 ImageSourceGroup 只呈现一行输入源。ROI、屏蔽区和 Assist
-            // 行由基本参数页的公共复合组接管，避免出现第二套输入视觉链。
-            new FieldPresentation(BlobLabelsSchema.ImageInput, "输入源", "图像输入", 0, FieldEditorKind.Image)
-            {
-                Layout = new("基本参数", "图像输入", AllowReference: true)
-            }
-        }),
-            workflowImageInputId: BlobLabelsSchema.ImageInput, outputDisplay: BlobLabelsSchema.OutputDisplay);
-
-    private static ResultProjectionDescriptor BuildProjection()
-    {
-        ResultColumnDescriptor Column(string key, string label, params string[] member)
-            => new(key, label, new ResultFieldPath(BlobLabelsSchema.Rows, member), DecimalPlaces: member[0] is "element-id" ? 0 : 2,
-                Geometry: new(BlobLabelsSchema.Rows, new[] { "centroid" }),
-                GeometrySource: new(BlobLabelsSchema.Rows, new[] { "region" }));
-        var columns = new[]
-        {
-            Column("element-id", "序号", "element-id"),
-            Column("area", "面积", "area"),
-            Column("perimeter", "周长", "perimeter"),
-            Column("centroid-x", "质心X", "centroid-x"),
-            Column("centroid-y", "质心Y", "centroid-y"),
-            Column("circularity", "圆形度", "circularity"),
-            Column("rectangularity", "矩形度", "rectangularity"),
-            Column("long-axis", "长轴", "long-axis"),
-            Column("short-axis", "短轴", "short-axis"),
-            Column("angle", "Box角度", "oriented-bounds", "angle-degrees"),
-            Column("judgment", "判定", "judgment-passed")
-        };
-        var projection = new ResultProjectionDescriptor(ResultProjectionKind.StandardTable, ResultCardinality.Many,
-            columns, new ResultFieldPath(BlobLabelsSchema.Rows), "element-id");
-        var errors = projection.Validate(new BlobLabelsTool().ResultSchema);
-        if (errors.Count != 0)
-            throw new InvalidOperationException("BlobLabels 结果投影声明无效：" + string.Join("；", errors.Select(error => error.Message)));
-        BlobLabelsResultDisplay.Descriptor.Validate(new BlobLabelsTool().ResultSchema);
-        return projection;
-    }
-
-    public IReadOnlyList<Diagnostic> Validate(BlobLabelsSettings settings)
+    public override IReadOnlyList<Diagnostic> Validate(BlobLabelsSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
         return settings.Validate();
-    }
-
-    public ToolCapabilities Capabilities() => new(new[] { "halcon" });
-
-    public void InitializeRuntime() => HalconPlatform.Initialise();
-
-    public IToolSession<BlobLabelsSettings, BlobLabelsOutput> CreateSession() => new BlobLabelsSession();
-
-    public InputValues ReadSettings(object settings)
-        => BlobLabelsFields.Read(settings as BlobLabelsSettings ?? throw new ArgumentException("BlobLabelsSettings is required.", nameof(settings)));
-
-    public object MaterializeSettings(InputValues values) => BlobLabelsFields.Materialize(values);
-
-    public InputValues CreateDisplaySettings() => BlobLabelsResultDisplay.Defaults();
-
-    public ResultDisplayAppearance CaptureResultDisplay(FieldSettings displayFields)
-    {
-        ArgumentNullException.ThrowIfNull(displayFields);
-        return BlobLabelsResultDisplay.Capture(displayFields);
     }
 
     /// <summary>已知设置的显式校验：字段联动不出现在执行期，只在准入时给出明确诊断。</summary>
@@ -144,4 +70,8 @@ public sealed class BlobLabelsTool : IToolDefinition<BlobLabelsSettings, BlobLab
         }
         return errors.AsReadOnly();
     }
+
+    public override ToolCapabilities Capabilities() => new(new[] { "halcon" });
+
+    public void InitializeRuntime() => HalconPlatform.Initialise();
 }

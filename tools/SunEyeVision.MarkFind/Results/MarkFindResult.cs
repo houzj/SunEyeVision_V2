@@ -81,7 +81,8 @@ public sealed record MarkFindResultProjection(
 /// <summary>
 /// 标记查找的输出对象。调用成功即构造完整声明，输出资源所有权随本次调用的输出作用域释放。
 /// </summary>
-public sealed class MarkFindOutput : IToolOutput, IDisposable, IToolResultRecordOutput, IToolResultGeometryOutput
+public sealed class MarkFindOutput : IToolOutput, IDisposable, IToolResultRecordOutput, IToolResultGeometryOutput,
+    IToolResultOutlineOutput
 {
     private readonly IReadOnlyList<IDisposable> _owned;
     private readonly Dictionary<string, object?> _values;
@@ -96,13 +97,31 @@ public sealed class MarkFindOutput : IToolOutput, IDisposable, IToolResultRecord
         Measurements = measurements;
         LimitMessages = limitMessages;
         ResultGeometry = geometry;
+        ResultOutline = BuildOutline(measurements, geometry.SourceFrame);
         _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
         _values = BuildValues();
         _ = new InputValues(MarkFindSchema.Outputs, _values);
     }
 
     public MarkFindSettings Settings { get; }
+    /// <summary>系统级轮廓点（原件 MatchOutlinePoints 的统一点集形态）。</summary>
+    public ResultOutlineSet? ResultOutline { get; }
     public MarkFindResultProjection Projection { get; }
+    private static ResultOutlineSet? BuildOutline(IReadOnlyList<MarkFindMeasurement> measurements,
+        ImageFrameAddress frame)
+    {
+        var points = new List<Point2>();
+        var indices = new List<int>();
+        var scores = new List<float>();
+        for (var match = 0; match < measurements.Count; match++)
+            foreach (var point in measurements[match].Outline)
+            {
+                points.Add(point);
+                indices.Add(match);
+                scores.Add(measurements[match].Passed ? 0f : 2f);
+            }
+        return points.Count == 0 ? null : new ResultOutlineSet(frame, points, indices, scores);
+    }
     public IReadOnlyList<MarkFindMeasurement> Measurements { get; }
     public IReadOnlyList<string> LimitMessages { get; }
     public ResultGeometrySnapshot ResultGeometry { get; }

@@ -56,23 +56,14 @@ internal static class ContourMatchRoiComposer
         }, attach, observe);
     }
 
-    public static INativeRoiEditDocument CreateDocument(DeclaredInputFieldsView inputs) => new RoiDocumentStore(
-        inputs, LocalDocumentId, Groups, ContourMatchSchema.ImageInput, Inheritance, MaskInheritance,
-        new[] { "检测区域", "屏蔽区域" });
+    public static INativeRoiEditDocument CreateDocument(DeclaredInputFieldsView inputs)
+        => RoiDocumentStore.From(RoiEdit, inputs);
 
     private static IReadOnlyList<NativeRoiEditGroup> Groups { get; } = Array.AsReadOnly(new[]
     {
         new NativeRoiEditGroup(RoiDocumentValue.Inspection, "形状", false, 16, RoiDocumentValue.FullDomain),
         new NativeRoiEditGroup(RoiDocumentValue.Mask, "屏蔽区", true, 8, RoiDocumentValue.None)
     });
-
-    private static RoiInheritanceSpec Inheritance { get; } = new(
-        ModeId, Local,
-        new(Rectangle, "RectangleParameters", RectangleSource,
-            new[] { "center-x", "center-y", "width", "height", "angle-degrees" }, "rectangle"),
-        new(Annulus, "AnnulusParameters", AnnulusSource,
-            new[] { "center-x", "center-y", "inner-radius", "outer-radius", "start-degrees", "sweep-degrees" }, "annulus"),
-        MaximumInherited);
 
     private static MaskInheritanceSpec MaskInheritance { get; } = new(MaskInherited, MaskSource, MaximumInherited);
 }

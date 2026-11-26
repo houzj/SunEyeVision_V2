@@ -81,6 +81,7 @@ public sealed record ContourMatchResultProjection(
         if (count == 0) return null;
         var x = new double[count];
         var y = new double[count];
+        var score = new double[count];
         var index = new long[count];
         var position = 0;
         for (var match = 0; match < measurements.Count; match++)
@@ -88,11 +89,18 @@ public sealed record ContourMatchResultProjection(
             {
                 x[position] = (float)point.X;
                 y[position] = (float)point.Y;
+                // 原件 MatchOutlineScore 是逐点三态；本方 HALCON 形状模板只给匹配级判定，
+                // 因此按该匹配的判定写 0/2，不伪造中间态。
+                score[position] = measurements[match].Passed ? 0f : 2f;
                 index[position++] = match;
             }
         return new(ContourMatchSchema.OutlineSetType, new Dictionary<string, object?>
         {
-            ["x"] = x, ["y"] = y, ["match-index"] = index, ["count"] = (long)count
+            ["count"] = (long)count,
+            ["info"] = new RecordValue(ContourMatchSchema.OutlineInfoType, new Dictionary<string, object?>
+            {
+                ["x"] = x, ["y"] = y, ["score"] = score, ["match-index"] = index
+            })
         });
     }
 }
@@ -100,7 +108,8 @@ public sealed record ContourMatchResultProjection(
 /// <summary>
 /// 轮廓匹配的输出对象。调用成功即构造完整声明，输出资源所有权随本次调用的输出作用域释放。
 /// </summary>
-public sealed class ContourMatchOutput : IToolOutput, IDisposable, IToolResultRecordOutput, IToolResultGeometryOutput
+public sealed class ContourMatchOutput : IToolOutput, IDisposable, IToolResultRecordOutput, IToolResultGeometryOutput,
+    IToolResultOutlineOutput
 {
     private readonly IReadOnlyList<IDisposable> _owned;
     private readonly Dictionary<string, object?> _values;
@@ -115,6 +124,7 @@ public sealed class ContourMatchOutput : IToolOutput, IDisposable, IToolResultRe
         Measurements = measurements;
         LimitMessages = limitMessages;
         ResultGeometry = geometry;
+        ResultOutline = BuildOutline(measurements, geometry.SourceFrame);
         _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
         _values = BuildValues();
         _ = new InputValues(ContourMatchSchema.Outputs, _values);
@@ -125,7 +135,24 @@ public sealed class ContourMatchOutput : IToolOutput, IDisposable, IToolResultRe
     public IReadOnlyList<ContourMatchMeasurement> Measurements { get; }
     public IReadOnlyList<string> LimitMessages { get; }
     public ResultGeometrySnapshot ResultGeometry { get; }
+    /// <summary>系统级轮廓点（原件 MatchOutlinePoints 的统一点集形态）。</summary>
+    public ResultOutlineSet? ResultOutline { get; }
     public bool IsPass => Projection.ModuleStatus != 0;
+    private static ResultOutlineSet? BuildOutline(IReadOnlyList<ContourMatchMeasurement> measurements,
+        ImageFrameAddress frame)
+    {
+        var points = new List<Point2>();
+        var indices = new List<int>();
+        var scores = new List<float>();
+        for (var match = 0; match < measurements.Count; match++)
+            foreach (var point in measurements[match].Outline)
+            {
+                points.Add(point);
+                indices.Add(match);
+                scores.Add(measurements[match].Passed ? 0f : 2f);
+            }
+        return points.Count == 0 ? null : new ResultOutlineSet(frame, points, indices, scores);
+    }
 
     public IReadOnlyDictionary<string, object?> ToValues()
     {

@@ -34,6 +34,8 @@ public partial class MarkFindParameterEditor : UserControl, IToolSettingsView, I
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(draft);
         ArgumentNullException.ThrowIfNull(options);
+        // 结果页显示声明（原厂 Display.xml 的 ImageViewConfig 集合）：六个图形组 + 文本组。
+        options = MarkFindDisplayUi.Configure(options);
         var panel = new MarkFindTemplatePanel(draft, options.AcceptCandidate, options.RoiFrames);
         var suppressed = new HashSet<string>(options.SuppressedFieldRows ?? new HashSet<string>(), StringComparer.Ordinal)
         {

@@ -46,12 +46,20 @@ public static class ContourMatchSchema
         new Port("height", DataType.Number, Storage: NumericStorage.Float32),
         new Port("angle-degrees", DataType.Number, Storage: NumericStorage.Float32)
     });
-    public static TypeRef OutlineSetType { get; } = TypeRef.RecordOf("contourmatch.outline-points", new[]
+    /// <summary>原件 MatchOutlinePoints 的 info 打包：逐点坐标 + 归属匹配序号 + 逐点分数。</summary>
+    public static TypeRef OutlineInfoType { get; } = TypeRef.RecordOf("contourmatch.outline-info", new[]
     {
         new Port("x", DataType.NumberArray, Storage: NumericStorage.Float32),
         new Port("y", DataType.NumberArray, Storage: NumericStorage.Float32),
-        new Port("match-index", TypeRef.SequenceOf(DataType.Integer), Storage: NumericStorage.Int32),
-        new Port("count", DataType.Integer, Storage: NumericStorage.Int32)
+        // 逐点分数：0=匹配点、1=中间态、其余=未匹配（原件 MatchOutlineScore 语义）。
+        new Port("score", DataType.NumberArray, Storage: NumericStorage.Float32),
+        new Port("match-index", TypeRef.SequenceOf(DataType.Integer), Storage: NumericStorage.Int32)
+    });
+    /// <summary>原件 MatchOutlinePoints：count + info，与 Blob 的 CONTOURPOINTS 同一打包形态。</summary>
+    public static TypeRef OutlineSetType { get; } = TypeRef.RecordOf("contourmatch.outline-points", new[]
+    {
+        new Port("count", DataType.Integer, Storage: NumericStorage.Int32),
+        new Port("info", OutlineInfoType)
     });
     public static TypeRef ResultType { get; } = TypeRef.RecordOf("contourmatch.result", new[]
     {

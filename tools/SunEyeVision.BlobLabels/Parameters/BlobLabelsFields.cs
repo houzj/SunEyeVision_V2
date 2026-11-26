@@ -120,11 +120,12 @@ public static class BlobLabelsFields
         };
 
     private static BlobLabelsFieldSpec E(string vm, string name, string label, string section, Type enumType, int value,
-        IEnumerable<string> keys, IEnumerable<string> labels, string page = RunPage)
+        IEnumerable<string> keys, IEnumerable<string> labels, bool advanced = false, string page = RunPage)
         => new()
         {
             VirtualMachineName = vm, Name = name, Id = StableId(name), Type = enumType,
             Default = Enum.ToObject(enumType, value), Label = label, Page = page, Section = section,
+            Advanced = advanced,
             Choices = keys.ToArray(), ChoiceLabels = keys.Zip(labels).ToDictionary(item => item.First, item => item.Second, StringComparer.Ordinal)
         };
 
@@ -159,38 +160,40 @@ public static class BlobLabelsFields
 
             // 运行参数 / 高级参数（原厂 ParamItem 7..27）
             B("SelectByPerimeter", nameof(BlobLabelsSettings.PerimeterFilterEnabled), "周长使能", RunSection, false, advanced: true),
-            I("MinPerimeter", nameof(BlobLabelsSettings.PerimeterFilterMin), "周长下限", RunSection, 10, 1, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterFilterEnabled), pair: nameof(BlobLabelsSettings.PerimeterFilterMax), pairLabel: "周长范围", advanced: true),
-            I("MaxPerimeter", nameof(BlobLabelsSettings.PerimeterFilterMax), "周长上限", RunSection, 999_999_999, 1, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterFilterEnabled), advanced: true),
+            I("MinPerimeter", nameof(BlobLabelsSettings.PerimeterFilterMin), "周长下限", RunSection, 10, 1, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterFilterEnabled), pair: nameof(BlobLabelsSettings.PerimeterFilterMax), pairLabel: "周长范围", advanced: false),
+            I("MaxPerimeter", nameof(BlobLabelsSettings.PerimeterFilterMax), "周长上限", RunSection, 999_999_999, 1, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterFilterEnabled), advanced: false),
             B("SelectByShortAxis", nameof(BlobLabelsSettings.ShortAxisFilterEnabled), "短轴使能", RunSection, false, advanced: true),
-            I("MinShortAxis", nameof(BlobLabelsSettings.ShortAxisFilterMin), "短轴下限", RunSection, 1, 1, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisFilterEnabled), pair: nameof(BlobLabelsSettings.ShortAxisFilterMax), pairLabel: "短轴范围", advanced: true),
-            I("MaxShortAxis", nameof(BlobLabelsSettings.ShortAxisFilterMax), "短轴上限", RunSection, 999_999_999, 1, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisFilterEnabled), advanced: true),
+            I("MinShortAxis", nameof(BlobLabelsSettings.ShortAxisFilterMin), "短轴下限", RunSection, 1, 1, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisFilterEnabled), pair: nameof(BlobLabelsSettings.ShortAxisFilterMax), pairLabel: "短轴范围", advanced: false),
+            I("MaxShortAxis", nameof(BlobLabelsSettings.ShortAxisFilterMax), "短轴上限", RunSection, 999_999_999, 1, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisFilterEnabled), advanced: false),
             B("SelectByLongAxis", nameof(BlobLabelsSettings.LongAxisFilterEnabled), "长轴使能", RunSection, false, advanced: true),
-            I("MinLongAxis", nameof(BlobLabelsSettings.LongAxisFilterMin), "长轴下限", RunSection, 10, 1, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisFilterEnabled), pair: nameof(BlobLabelsSettings.LongAxisFilterMax), pairLabel: "长轴范围", advanced: true),
-            I("MaxLongAxis", nameof(BlobLabelsSettings.LongAxisFilterMax), "长轴上限", RunSection, 999_999_999, 1, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisFilterEnabled), advanced: true),
+            I("MinLongAxis", nameof(BlobLabelsSettings.LongAxisFilterMin), "长轴下限", RunSection, 10, 1, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisFilterEnabled), pair: nameof(BlobLabelsSettings.LongAxisFilterMax), pairLabel: "长轴范围", advanced: false),
+            I("MaxLongAxis", nameof(BlobLabelsSettings.LongAxisFilterMax), "长轴上限", RunSection, 999_999_999, 1, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisFilterEnabled), advanced: false),
             B("SelectByCircularuty", nameof(BlobLabelsSettings.CircularityFilterEnabled), "圆形度使能", RunSection, false, advanced: true),
-            N("MinCircularity", nameof(BlobLabelsSettings.CircularityFilterMin), "圆形度下限", RunSection, 0.1, 0, 1, when: nameof(BlobLabelsSettings.CircularityFilterEnabled), pair: nameof(BlobLabelsSettings.CircularityFilterMax), pairLabel: "圆形度范围", advanced: true),
-            N("MaxCircularity", nameof(BlobLabelsSettings.CircularityFilterMax), "圆形度上限", RunSection, 1, 0, 1, when: nameof(BlobLabelsSettings.CircularityFilterEnabled), advanced: true),
+            N("MinCircularity", nameof(BlobLabelsSettings.CircularityFilterMin), "圆形度下限", RunSection, 0.1, 0, 1, when: nameof(BlobLabelsSettings.CircularityFilterEnabled), pair: nameof(BlobLabelsSettings.CircularityFilterMax), pairLabel: "圆形度范围", advanced: false),
+            N("MaxCircularity", nameof(BlobLabelsSettings.CircularityFilterMax), "圆形度上限", RunSection, 1, 0, 1, when: nameof(BlobLabelsSettings.CircularityFilterEnabled), advanced: false),
             B("SelectByRectangularity", nameof(BlobLabelsSettings.RectangularityFilterEnabled), "矩形度使能", RunSection, false, advanced: true),
-            N("MinRectangularity", nameof(BlobLabelsSettings.RectangularityFilterMin), "矩形度下限", RunSection, 0.1, 0, 1, when: nameof(BlobLabelsSettings.RectangularityFilterEnabled), pair: nameof(BlobLabelsSettings.RectangularityFilterMax), pairLabel: "矩形度范围", advanced: true),
-            N("MaxRectangularity", nameof(BlobLabelsSettings.RectangularityFilterMax), "矩形度上限", RunSection, 1, 0, 1, when: nameof(BlobLabelsSettings.RectangularityFilterEnabled), advanced: true),
+            N("MinRectangularity", nameof(BlobLabelsSettings.RectangularityFilterMin), "矩形度下限", RunSection, 0.1, 0, 1, when: nameof(BlobLabelsSettings.RectangularityFilterEnabled), pair: nameof(BlobLabelsSettings.RectangularityFilterMax), pairLabel: "矩形度范围", advanced: false),
+            N("MaxRectangularity", nameof(BlobLabelsSettings.RectangularityFilterMax), "矩形度上限", RunSection, 1, 0, 1, when: nameof(BlobLabelsSettings.RectangularityFilterEnabled), advanced: false),
             B("SelectByCentraBias", nameof(BlobLabelsSettings.CenterBiasFilterEnabled), "质心偏移使能", RunSection, false, advanced: true),
-            N("MinCenterBias", nameof(BlobLabelsSettings.CenterBiasFilterMin), "质心偏移下限", RunSection, 0, 0, 9_999_999.99, when: nameof(BlobLabelsSettings.CenterBiasFilterEnabled), pair: nameof(BlobLabelsSettings.CenterBiasFilterMax), pairLabel: "质心偏移范围", advanced: true),
-            N("MaxCenterBias", nameof(BlobLabelsSettings.CenterBiasFilterMax), "质心偏移上限", RunSection, 9_999_999.99, 0, 9_999_999.99, when: nameof(BlobLabelsSettings.CenterBiasFilterEnabled), advanced: true),
+            N("MinCenterBias", nameof(BlobLabelsSettings.CenterBiasFilterMin), "质心偏移下限", RunSection, 0, 0, 9_999_999.99, when: nameof(BlobLabelsSettings.CenterBiasFilterEnabled), pair: nameof(BlobLabelsSettings.CenterBiasFilterMax), pairLabel: "质心偏移范围", advanced: false),
+            N("MaxCenterBias", nameof(BlobLabelsSettings.CenterBiasFilterMax), "质心偏移上限", RunSection, 9_999_999.99, 0, 9_999_999.99, when: nameof(BlobLabelsSettings.CenterBiasFilterEnabled), advanced: false),
             B("AxisRatioEnable", nameof(BlobLabelsSettings.AxisRatioFilterEnabled), "轴比使能", RunSection, false, advanced: true),
-            N("MinAxisRatio", nameof(BlobLabelsSettings.AxisRatioFilterMin), "轴比下限", RunSection, 0.01, 0.01, 1, when: nameof(BlobLabelsSettings.AxisRatioFilterEnabled), pair: nameof(BlobLabelsSettings.AxisRatioFilterMax), pairLabel: "轴比范围", advanced: true),
-            N("MaxAxisRatio", nameof(BlobLabelsSettings.AxisRatioFilterMax), "轴比上限", RunSection, 1, 0, 1, when: nameof(BlobLabelsSettings.AxisRatioFilterEnabled), advanced: true),
+            N("MinAxisRatio", nameof(BlobLabelsSettings.AxisRatioFilterMin), "轴比下限", RunSection, 0.01, 0.01, 1, when: nameof(BlobLabelsSettings.AxisRatioFilterEnabled), pair: nameof(BlobLabelsSettings.AxisRatioFilterMax), pairLabel: "轴比范围", advanced: false),
+            N("MaxAxisRatio", nameof(BlobLabelsSettings.AxisRatioFilterMax), "轴比上限", RunSection, 1, 0, 1, when: nameof(BlobLabelsSettings.AxisRatioFilterEnabled), advanced: false),
 
             // 排序与连通性（原厂 ParamItem 28..33）
             E("SortFeature", nameof(BlobLabelsSettings.SortFeature), "排序特征", RunSection, typeof(BlobLabelsSortFeature), 1,
                 Enum.GetNames<BlobLabelsSortFeature>(),
-                new[] { "面积", "周长", "圆形度", "矩形度", "连通域中心x", "连通域中心y", "box角度", "box宽", "box高", "矩形左上顶点x", "矩形左上顶点y", "二阶中心距主轴角度", "轴比(box短轴/box长轴)" }),
+                new[] { "面积", "周长", "圆形度", "矩形度", "连通域中心x", "连通域中心y", "box角度", "box宽", "box高", "矩形左上顶点x", "矩形左上顶点y", "二阶中心距主轴角度", "轴比(box短轴/box长轴)" },
+                // 证据 IMVSBlobFindLabelsModuAlgorithmTab.xml：Expert(Expand) 之后的三项。
+                advanced: true),
             E("SortMode", nameof(BlobLabelsSettings.SortMode), "排序方式", RunSection, typeof(BlobLabelsSortMode), 2,
-                Enum.GetNames<BlobLabelsSortMode>(), new[] { "升序", "降序", "不排序" }),
+                Enum.GetNames<BlobLabelsSortMode>(), new[] { "升序", "降序", "不排序" }, advanced: true),
             E("connectivity", nameof(BlobLabelsSettings.Connectivity), "连通性", RunSection, typeof(BlobLabelsConnectivity), 8,
-                Enum.GetNames<BlobLabelsConnectivity>(), new[] { "8连通", "4连通" }),
-            I("OverlapRatio", nameof(BlobLabelsSettings.MinOverlapRatio), "最小重叠率", RunSection, 0, 0, 100, advanced: true),
+                Enum.GetNames<BlobLabelsConnectivity>(), new[] { "8连通", "4连通" }, advanced: true),
+            I("OverlapRatio", nameof(BlobLabelsSettings.MinOverlapRatio), "最小重叠率", RunSection, 0, 0, 100, advanced: false),
             B("MaxOutPixelNumEnable", nameof(BlobLabelsSettings.MaxOutsidePixelEnabled), "像素超界使能", RunSection, false, advanced: true),
-            I("MaxOutPixelNum", nameof(BlobLabelsSettings.MaxOutsidePixels), "最大超界像素", RunSection, 0, 0, int.MaxValue, when: nameof(BlobLabelsSettings.MaxOutsidePixelEnabled), advanced: true),
+            I("MaxOutPixelNum", nameof(BlobLabelsSettings.MaxOutsidePixels), "最大超界像素", RunSection, 0, 0, int.MaxValue, when: nameof(BlobLabelsSettings.MaxOutsidePixelEnabled), advanced: false),
 
             // 结果判断（原厂 ParamItem 34..78）
             B("BlobNumLimitEnable", nameof(BlobLabelsSettings.BlobCountJudgeEnabled), "Blob个数判断", JudgeSection, false),
@@ -204,41 +207,41 @@ public static class BlobLabelsFields
             N("BlobTotalAreaLimitHigh", nameof(BlobLabelsSettings.TotalAreaJudgeMax), "总面积上限", JudgeSection, 999_999_999, 0, 999_999_999, when: nameof(BlobLabelsSettings.TotalAreaJudgeEnabled)),
 
             B("CentroidXLimitEnable", nameof(BlobLabelsSettings.CentroidXJudgeEnabled), "质心X判断", JudgeSection, false, advanced: true),
-            N("CentroidXLimitLow", nameof(BlobLabelsSettings.CentroidXJudgeMin), "质心X下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidXJudgeEnabled), pair: nameof(BlobLabelsSettings.CentroidXJudgeMax), pairLabel: "质心X范围", advanced: true),
-            N("CentroidXLimitHigh", nameof(BlobLabelsSettings.CentroidXJudgeMax), "质心X上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidXJudgeEnabled), advanced: true),
+            N("CentroidXLimitLow", nameof(BlobLabelsSettings.CentroidXJudgeMin), "质心X下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidXJudgeEnabled), pair: nameof(BlobLabelsSettings.CentroidXJudgeMax), pairLabel: "质心X范围", advanced: false),
+            N("CentroidXLimitHigh", nameof(BlobLabelsSettings.CentroidXJudgeMax), "质心X上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidXJudgeEnabled), advanced: false),
             B("CentroidYLimitEnable", nameof(BlobLabelsSettings.CentroidYJudgeEnabled), "质心Y判断", JudgeSection, false, advanced: true),
-            N("CentroidYLimitLow", nameof(BlobLabelsSettings.CentroidYJudgeMin), "质心Y下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidYJudgeEnabled), pair: nameof(BlobLabelsSettings.CentroidYJudgeMax), pairLabel: "质心Y范围", advanced: true),
-            N("CentroidYLimitHigh", nameof(BlobLabelsSettings.CentroidYJudgeMax), "质心Y上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidYJudgeEnabled), advanced: true),
+            N("CentroidYLimitLow", nameof(BlobLabelsSettings.CentroidYJudgeMin), "质心Y下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidYJudgeEnabled), pair: nameof(BlobLabelsSettings.CentroidYJudgeMax), pairLabel: "质心Y范围", advanced: false),
+            N("CentroidYLimitHigh", nameof(BlobLabelsSettings.CentroidYJudgeMax), "质心Y上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CentroidYJudgeEnabled), advanced: false),
             B("AngleLimitEnable", nameof(BlobLabelsSettings.BoxAngleJudgeEnabled), "Box角度判断", JudgeSection, false, advanced: true),
-            N("AngleLimitLow", nameof(BlobLabelsSettings.BoxAngleJudgeMin), "Box角度下限", JudgeSection, -180, -180, 180, when: nameof(BlobLabelsSettings.BoxAngleJudgeEnabled), pair: nameof(BlobLabelsSettings.BoxAngleJudgeMax), pairLabel: "Box角度范围", advanced: true),
-            N("AngleLimitHigh", nameof(BlobLabelsSettings.BoxAngleJudgeMax), "Box角度上限", JudgeSection, 180, -180, 180, when: nameof(BlobLabelsSettings.BoxAngleJudgeEnabled), advanced: true),
+            N("AngleLimitLow", nameof(BlobLabelsSettings.BoxAngleJudgeMin), "Box角度下限", JudgeSection, -180, -180, 180, when: nameof(BlobLabelsSettings.BoxAngleJudgeEnabled), pair: nameof(BlobLabelsSettings.BoxAngleJudgeMax), pairLabel: "Box角度范围", advanced: false),
+            N("AngleLimitHigh", nameof(BlobLabelsSettings.BoxAngleJudgeMax), "Box角度上限", JudgeSection, 180, -180, 180, when: nameof(BlobLabelsSettings.BoxAngleJudgeEnabled), advanced: false),
             B("CenterXLimitEnable", nameof(BlobLabelsSettings.CenterXJudgeEnabled), "中心X判断", JudgeSection, false, advanced: true),
-            N("CenterXLimitLow", nameof(BlobLabelsSettings.CenterXJudgeMin), "中心X下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterXJudgeEnabled), pair: nameof(BlobLabelsSettings.CenterXJudgeMax), pairLabel: "中心X范围", advanced: true),
-            N("CenterXLimitHigh", nameof(BlobLabelsSettings.CenterXJudgeMax), "中心X上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterXJudgeEnabled), advanced: true),
+            N("CenterXLimitLow", nameof(BlobLabelsSettings.CenterXJudgeMin), "中心X下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterXJudgeEnabled), pair: nameof(BlobLabelsSettings.CenterXJudgeMax), pairLabel: "中心X范围", advanced: false),
+            N("CenterXLimitHigh", nameof(BlobLabelsSettings.CenterXJudgeMax), "中心X上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterXJudgeEnabled), advanced: false),
             B("CenterYLimitEnable", nameof(BlobLabelsSettings.CenterYJudgeEnabled), "中心Y判断", JudgeSection, false, advanced: true),
-            N("CenterYLimitLow", nameof(BlobLabelsSettings.CenterYJudgeMin), "中心Y下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterYJudgeEnabled), pair: nameof(BlobLabelsSettings.CenterYJudgeMax), pairLabel: "中心Y范围", advanced: true),
-            N("CenterYLimitHigh", nameof(BlobLabelsSettings.CenterYJudgeMax), "中心Y上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterYJudgeEnabled), advanced: true),
+            N("CenterYLimitLow", nameof(BlobLabelsSettings.CenterYJudgeMin), "中心Y下限", JudgeSection, -99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterYJudgeEnabled), pair: nameof(BlobLabelsSettings.CenterYJudgeMax), pairLabel: "中心Y范围", advanced: false),
+            N("CenterYLimitHigh", nameof(BlobLabelsSettings.CenterYJudgeMax), "中心Y上限", JudgeSection, 99_999, -99_999, 99_999, when: nameof(BlobLabelsSettings.CenterYJudgeEnabled), advanced: false),
             B("BoxHeightLimitEnable", nameof(BlobLabelsSettings.BoxHeightJudgeEnabled), "Box高度判断", JudgeSection, false, advanced: true),
-            N("BoxHeightLimitLow", nameof(BlobLabelsSettings.BoxHeightJudgeMin), "Box高度下限", JudgeSection, 1, 0, 99_999, when: nameof(BlobLabelsSettings.BoxHeightJudgeEnabled), pair: nameof(BlobLabelsSettings.BoxHeightJudgeMax), pairLabel: "Box高度范围", advanced: true),
-            N("BoxHeightLimitHigh", nameof(BlobLabelsSettings.BoxHeightJudgeMax), "Box高度上限", JudgeSection, 99_999, 0, 99_999, when: nameof(BlobLabelsSettings.BoxHeightJudgeEnabled), advanced: true),
+            N("BoxHeightLimitLow", nameof(BlobLabelsSettings.BoxHeightJudgeMin), "Box高度下限", JudgeSection, 1, 0, 99_999, when: nameof(BlobLabelsSettings.BoxHeightJudgeEnabled), pair: nameof(BlobLabelsSettings.BoxHeightJudgeMax), pairLabel: "Box高度范围", advanced: false),
+            N("BoxHeightLimitHigh", nameof(BlobLabelsSettings.BoxHeightJudgeMax), "Box高度上限", JudgeSection, 99_999, 0, 99_999, when: nameof(BlobLabelsSettings.BoxHeightJudgeEnabled), advanced: false),
             B("BoxWidthLimitEnable", nameof(BlobLabelsSettings.BoxWidthJudgeEnabled), "Box宽度判断", JudgeSection, false, advanced: true),
-            N("BoxWidthLimitLow", nameof(BlobLabelsSettings.BoxWidthJudgeMin), "Box宽度下限", JudgeSection, 1, 0, 99_999, when: nameof(BlobLabelsSettings.BoxWidthJudgeEnabled), pair: nameof(BlobLabelsSettings.BoxWidthJudgeMax), pairLabel: "Box宽度范围", advanced: true),
-            N("BoxWidthLimitHigh", nameof(BlobLabelsSettings.BoxWidthJudgeMax), "Box宽度上限", JudgeSection, 99_999, 0, 99_999, when: nameof(BlobLabelsSettings.BoxWidthJudgeEnabled), advanced: true),
+            N("BoxWidthLimitLow", nameof(BlobLabelsSettings.BoxWidthJudgeMin), "Box宽度下限", JudgeSection, 1, 0, 99_999, when: nameof(BlobLabelsSettings.BoxWidthJudgeEnabled), pair: nameof(BlobLabelsSettings.BoxWidthJudgeMax), pairLabel: "Box宽度范围", advanced: false),
+            N("BoxWidthLimitHigh", nameof(BlobLabelsSettings.BoxWidthJudgeMax), "Box宽度上限", JudgeSection, 99_999, 0, 99_999, when: nameof(BlobLabelsSettings.BoxWidthJudgeEnabled), advanced: false),
             B("PerimeterLimitEnable", nameof(BlobLabelsSettings.PerimeterJudgeEnabled), "周长判断", JudgeSection, false, advanced: true),
-            N("PerimeterLimitLow", nameof(BlobLabelsSettings.PerimeterJudgeMin), "周长判断下限", JudgeSection, 1, 0, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterJudgeEnabled), pair: nameof(BlobLabelsSettings.PerimeterJudgeMax), pairLabel: "周长判断范围", advanced: true),
-            N("PerimeterLimitHigh", nameof(BlobLabelsSettings.PerimeterJudgeMax), "周长判断上限", JudgeSection, 999_999_999, 0, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterJudgeEnabled), advanced: true),
+            N("PerimeterLimitLow", nameof(BlobLabelsSettings.PerimeterJudgeMin), "周长判断下限", JudgeSection, 1, 0, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterJudgeEnabled), pair: nameof(BlobLabelsSettings.PerimeterJudgeMax), pairLabel: "周长判断范围", advanced: false),
+            N("PerimeterLimitHigh", nameof(BlobLabelsSettings.PerimeterJudgeMax), "周长判断上限", JudgeSection, 999_999_999, 0, 999_999_999, when: nameof(BlobLabelsSettings.PerimeterJudgeEnabled), advanced: false),
             B("LongAxisLimitEnable", nameof(BlobLabelsSettings.LongAxisJudgeEnabled), "长轴判断", JudgeSection, false, advanced: true),
-            N("LongAxisLimitLow", nameof(BlobLabelsSettings.LongAxisJudgeMin), "长轴判断下限", JudgeSection, 1, 0, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisJudgeEnabled), pair: nameof(BlobLabelsSettings.LongAxisJudgeMax), pairLabel: "长轴判断范围", advanced: true),
-            N("LongAxisLimitHigh", nameof(BlobLabelsSettings.LongAxisJudgeMax), "长轴判断上限", JudgeSection, 999_999_999, 0, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisJudgeEnabled), advanced: true),
+            N("LongAxisLimitLow", nameof(BlobLabelsSettings.LongAxisJudgeMin), "长轴判断下限", JudgeSection, 1, 0, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisJudgeEnabled), pair: nameof(BlobLabelsSettings.LongAxisJudgeMax), pairLabel: "长轴判断范围", advanced: false),
+            N("LongAxisLimitHigh", nameof(BlobLabelsSettings.LongAxisJudgeMax), "长轴判断上限", JudgeSection, 999_999_999, 0, 999_999_999, when: nameof(BlobLabelsSettings.LongAxisJudgeEnabled), advanced: false),
             B("ShortAxisLimitEnable", nameof(BlobLabelsSettings.ShortAxisJudgeEnabled), "短轴判断", JudgeSection, false, advanced: true),
-            N("ShortAxisLimitLow", nameof(BlobLabelsSettings.ShortAxisJudgeMin), "短轴判断下限", JudgeSection, 1, 0, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisJudgeEnabled), pair: nameof(BlobLabelsSettings.ShortAxisJudgeMax), pairLabel: "短轴判断范围", advanced: true),
-            N("ShortAxisLimitHigh", nameof(BlobLabelsSettings.ShortAxisJudgeMax), "短轴判断上限", JudgeSection, 999_999_999, 0, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisJudgeEnabled), advanced: true),
+            N("ShortAxisLimitLow", nameof(BlobLabelsSettings.ShortAxisJudgeMin), "短轴判断下限", JudgeSection, 1, 0, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisJudgeEnabled), pair: nameof(BlobLabelsSettings.ShortAxisJudgeMax), pairLabel: "短轴判断范围", advanced: false),
+            N("ShortAxisLimitHigh", nameof(BlobLabelsSettings.ShortAxisJudgeMax), "短轴判断上限", JudgeSection, 999_999_999, 0, 999_999_999, when: nameof(BlobLabelsSettings.ShortAxisJudgeEnabled), advanced: false),
             B("CircularityLimitEnable", nameof(BlobLabelsSettings.CircularityJudgeEnabled), "圆形度判断", JudgeSection, false, advanced: true),
-            N("CircularityLimitLow", nameof(BlobLabelsSettings.CircularityJudgeMin), "圆形度判断下限", JudgeSection, 0, 0, 1, when: nameof(BlobLabelsSettings.CircularityJudgeEnabled), pair: nameof(BlobLabelsSettings.CircularityJudgeMax), pairLabel: "圆形度判断范围", advanced: true),
-            N("CircularityLimitHigh", nameof(BlobLabelsSettings.CircularityJudgeMax), "圆形度判断上限", JudgeSection, 1, 0, 1, when: nameof(BlobLabelsSettings.CircularityJudgeEnabled), advanced: true),
+            N("CircularityLimitLow", nameof(BlobLabelsSettings.CircularityJudgeMin), "圆形度判断下限", JudgeSection, 0, 0, 1, when: nameof(BlobLabelsSettings.CircularityJudgeEnabled), pair: nameof(BlobLabelsSettings.CircularityJudgeMax), pairLabel: "圆形度判断范围", advanced: false),
+            N("CircularityLimitHigh", nameof(BlobLabelsSettings.CircularityJudgeMax), "圆形度判断上限", JudgeSection, 1, 0, 1, when: nameof(BlobLabelsSettings.CircularityJudgeEnabled), advanced: false),
             B("RectangularityLimitEnable", nameof(BlobLabelsSettings.RectangularityJudgeEnabled), "矩形度判断", JudgeSection, false, advanced: true),
-            N("RectangularityLimitLow", nameof(BlobLabelsSettings.RectangularityJudgeMin), "矩形度判断下限", JudgeSection, 0, 0, 1, when: nameof(BlobLabelsSettings.RectangularityJudgeEnabled), pair: nameof(BlobLabelsSettings.RectangularityJudgeMax), pairLabel: "矩形度判断范围", advanced: true),
-            N("RectangularityLimitHigh", nameof(BlobLabelsSettings.RectangularityJudgeMax), "矩形度判断上限", JudgeSection, 1, 0, 1, when: nameof(BlobLabelsSettings.RectangularityJudgeEnabled), advanced: true)
+            N("RectangularityLimitLow", nameof(BlobLabelsSettings.RectangularityJudgeMin), "矩形度判断下限", JudgeSection, 0, 0, 1, when: nameof(BlobLabelsSettings.RectangularityJudgeEnabled), pair: nameof(BlobLabelsSettings.RectangularityJudgeMax), pairLabel: "矩形度判断范围", advanced: false),
+            N("RectangularityLimitHigh", nameof(BlobLabelsSettings.RectangularityJudgeMax), "矩形度判断上限", JudgeSection, 1, 0, 1, when: nameof(BlobLabelsSettings.RectangularityJudgeEnabled), advanced: false)
         };
         var names = fields.Select(field => field.Name).ToArray();
         if (names.Distinct(StringComparer.Ordinal).Count() != names.Length)
@@ -271,14 +274,28 @@ public static class BlobLabelsFields
                 PairMinimum: field.PairWith is null ? null : field.PairMinimum,
                 PairMaximum: field.PairWith is null ? null : field.PairMaximum,
                 PairDisplayName: field.PairLabel);
+            var displayType = DisplayTypeOf(field);
             presentations.Add(new FieldPresentation(field.Id, field.Label, field.Section, index,
                 field.Choices.Count == 0 ? FieldEditorKind.Scalar : FieldEditorKind.Choice,
-                field.Choices, field.ChoiceLabels) { Layout = layout });
+                field.Choices, field.ChoiceLabels, displayType) { Layout = layout });
         }
         return new ToolSchema(ports, Array.Empty<Port>(), new ToolPresentation(presentations));
     }
 
-    private static TypeRef PortType(BlobLabelsFieldSpec field)
+    /// <summary>
+    /// 原厂 DisplayType：选项→Enumeration；成对→Bettween；布尔→Boolean；文本→String；整数/浮点→Integer/Float。
+    /// manifest 复用同一规则，避免两处各写一份。
+    /// </summary>
+    internal static string DisplayTypeOf(BlobLabelsFieldSpec field)
+        => field.Choices.Count != 0 ? DeclaredFieldTemplateKey.Enumeration
+            : field.PairWith is not null
+                ? field.Type == typeof(int) ? DeclaredFieldTemplateKey.IntegerBettween : DeclaredFieldTemplateKey.FloatBettween
+            : field.Type == typeof(bool) ? DeclaredFieldTemplateKey.Boolean
+            : field.Type == typeof(string) ? DeclaredFieldTemplateKey.String
+            : field.Type == typeof(int) ? DeclaredFieldTemplateKey.Integer
+            : DeclaredFieldTemplateKey.Float;
+
+    internal static TypeRef PortType(BlobLabelsFieldSpec field)
         => field.Type == typeof(bool) ? DataType.Boolean
             : field.Type == typeof(int) ? DataType.Integer
             : field.Type == typeof(double) ? DataType.Number

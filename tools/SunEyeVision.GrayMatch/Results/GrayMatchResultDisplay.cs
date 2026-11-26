@@ -58,7 +58,7 @@ public static class GrayMatchResultDisplay
                 : FieldEditModes.Constant;
             var port = new Port(id, type, EditModes: modes);
             result.Add(new(port, new(id, label, section, order++,
-                type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar)
+                type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.FromPort(type, type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar))
             {
                 Layout = new FieldLayout("结果显示", section, Minimum: minimum, Maximum: maximum,
                     Increment: increment ?? 1, DecimalPlaces: type == DataType.Number ? decimals : 0,

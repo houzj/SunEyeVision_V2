@@ -75,10 +75,20 @@ public sealed class BlobLabelsSession : IToolSession<BlobLabelsSettings, BlobLab
 
         var imageMask = OptionalImage(inputs, BlobLabelsSchema.MaskInput);
         using var maskFromImage = imageMask is null ? null : ThresholdImageMask(imageMask, width, height);
+        // 原件基本页 ROI：Local 模式用参数页绘制的 ROI 文档直接参与搜索域，
+        // 不依赖重新执行；其余模式的来源由上游 Region 引用表达。
+        var localRoi = ReadLocalRoi(inputs);
+        using var localInspection = localRoi is null ? null
+            : RoiDocumentRasterizer.Build(localRoi, RoiDocumentValue.Inspection, domain, cancellation);
+        using var localMask = localRoi is null ? null
+            : RoiDocumentRasterizer.Build(localRoi, RoiDocumentValue.Mask, domain, cancellation);
         using var maskRegion = OptionalRegion(inputs, BlobLabelsSchema.MaskRegionInput, frame, width, height);
-        using var inspectionRegion = OptionalRegion(inputs, BlobLabelsSchema.InspectionRoiInput, frame, width, height);
+        using var declaredInspection = localInspection is null
+            ? OptionalRegion(inputs, BlobLabelsSchema.InspectionRoiInput, frame, width, height) : null;
         using var annulusRegion = OptionalRegion(inputs, BlobLabelsSchema.AnnulusRoiInput, frame, width, height);
-        using var combinedMask = Combine(maskFromImage, maskRegion);
+        var inspectionRegion = localInspection ?? declaredInspection;
+        using var declaredMask = Combine(maskFromImage, maskRegion);
+        using var combinedMask = Combine(declaredMask, localMask);
         using var effective = EffectiveDomain(domain, inspectionRegion, annulusRegion, combinedMask);
 
         using var reduced = gray.ReduceDomain(effective);
@@ -124,7 +134,8 @@ public sealed class BlobLabelsSession : IToolSession<BlobLabelsSettings, BlobLab
             var geometry = BlobLabelsResultGeometry.Capture(image, modulePassed, domain, inspectionRegion, annulusRegion,
                 combinedMask, fixture, cancellation);
             var output = new BlobLabelsOutput(settings, projection, measurements.AsReadOnly(),
-                limitMessages, geometry, binaryImage, blobImage, new IDisposable[] { outputResources });
+                limitMessages, geometry, binaryImage, blobImage,
+                new IDisposable[] { outputResources });
             invocation.Context.Log($"[Perf] tool=BlobLabels count={projection.Count} elapsed={projection.ModuleRunTime:0.###}ms");
             return output;
         }
@@ -141,6 +152,28 @@ public sealed class BlobLabelsSession : IToolSession<BlobLabelsSettings, BlobLab
 
     private static RecordValue? OptionalFixture(InputValues values)
         => values.Contains(BlobLabelsSchema.FixtureInput) ? values.Get<RecordValue?>(BlobLabelsSchema.FixtureInput) : null;
+
+    /// <summary>
+    /// 本地 ROI 文档：Local 模式读取；参数继承模式在运行期先物化为同一份文档。
+    /// 未设置模式时按原厂 ROISelecter 默认 Local。
+    /// </summary>
+    private static RecordValue? ReadLocalRoi(InputValues values)
+    {
+        var mode = values.Contains(BlobLabelsRoi.ModeId) ? values.Get<string>(BlobLabelsRoi.ModeId) : BlobLabelsRoi.Local;
+        var document = values.Contains(BlobLabelsRoi.LocalDocumentId)
+            ? values.Get<RecordValue?>(BlobLabelsRoi.LocalDocumentId) : null;
+        if (mode is BlobLabelsRoi.RectangleParameters or BlobLabelsRoi.AnnulusParameters)
+            document = BlobLabelsRoi.Materialize(values, document);
+        else if (mode != BlobLabelsRoi.Local)
+            return null;
+        if (document is null) return null;
+        RoiDocumentValue.Validate(document);
+        if (RoiDocumentValue.Items(document, RoiDocumentValue.Inspection).Count > BlobLabelsLocalRoi.MaximumInspectionCount)
+            throw new BlobLabelsCapabilityException("BLOBLABEL_ROI_LIMIT", $"检测区域最多 {BlobLabelsLocalRoi.MaximumInspectionCount} 个。");
+        if (RoiDocumentValue.Items(document, RoiDocumentValue.Mask).Count > BlobLabelsLocalRoi.MaximumMaskCount)
+            throw new BlobLabelsCapabilityException("BLOBLABEL_ROI_LIMIT", $"屏蔽区域最多 {BlobLabelsLocalRoi.MaximumMaskCount} 个。");
+        return document;
+    }
 
     private static HRegion? OptionalRegion(InputValues values, string id, ImageFrameAddress frame, int width, int height)
     {

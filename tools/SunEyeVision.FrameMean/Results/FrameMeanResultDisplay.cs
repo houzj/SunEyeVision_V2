@@ -33,7 +33,7 @@ public static class FrameMeanResultDisplay
             var id = Field(role);
             result.Add(new(new Port(id, type, EditModes: FieldEditModes.Constant),
                 new(id, label, "图像显示", order++,
-                    type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar)
+                    type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.FromPort(type, type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar))
                 {
                     Layout = new FieldLayout("结果显示", "图像显示", Minimum: minimum, Maximum: maximum,
                         Increment: increment ?? 1,

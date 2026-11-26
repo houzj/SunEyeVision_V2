@@ -11,9 +11,13 @@ namespace SunEyeVision.Tool.ContourMatch.Runtime;
 public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, ContourMatchOutput>,
     IToolSettingsFields, IToolCatalogProvider, IToolResultPresentationProvider, IToolResultDisplayProvider,
     IToolParameterBindingNames, IToolResourceFieldDeclarations, IToolKnownSettingsValidation, IToolRuntimeInitialization,
-    IToolExecutionInputs, IToolManualReferenceSources
+    IToolExecutionInputs, IToolManualReferenceSources, IToolResultOutlineDeclaration
 {
     public const string Id = "ContourMatch";
+    /// <summary>轮廓点出口（系统类型 IToolResultOutlineDeclaration）。</summary>
+    public string OutlinePortId => ContourMatchSchema.OutlinePoints;
+    /// <summary>结果视图与参数页共用的 ROI 编辑声明。</summary>
+    public RoiEditDeclaration RoiEdit => ContourMatchRoi.RoiEdit;
 
     private static readonly ToolSchema ExecutionSchema = BuildExecutionSchema();
     private static readonly ResultProjectionDescriptor Projection = BuildProjection();
@@ -76,7 +80,7 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
     private static IReadOnlyList<FieldPresentation> ExecutionInputPresentations()
         => new FieldPresentation[]
         {
-            new(ContourMatchSchema.ImageInput, "输入图像", ContourMatchFields.ImageInputSection, 0, FieldEditorKind.Image)
+            new(ContourMatchSchema.ImageInput, "输入图像", ContourMatchFields.ImageInputSection, 0, FieldEditorKind.Image, null, null, DeclaredFieldTemplateKey.ComposedSlot)
             {
                 Layout = new FieldLayout(ContourMatchFields.BasicPage, ContourMatchFields.ImageInputSection,
                     AllowReference: true)
@@ -109,7 +113,10 @@ public sealed class ContourMatchTool : IToolDefinition<ContourMatchSettings, Con
         }
         foreach (var member in new[] { "x", "y" }) Add(ContourMatchSchema.DetectRoi, "center", member);
         foreach (var member in new[] { "width", "height", "angle-degrees" }) Add(ContourMatchSchema.DetectRoi, member);
-        foreach (var member in new[] { "x", "y", "match-index", "count" }) Add(ContourMatchSchema.OutlinePoints, member);
+        // 原件 MatchOutlinePoints 打包为 count + info{x,y,score,match-index}。
+        Add(ContourMatchSchema.OutlinePoints, "count");
+        foreach (var member in new[] { "x", "y", "score", "match-index" })
+            Add(ContourMatchSchema.OutlinePoints, "info", member);
         return Array.AsReadOnly(sources.ToArray());
     }
     private static ResultProjectionDescriptor BuildProjection()

@@ -1,10 +1,9 @@
-using SunEyeVision.Plugin.Contracts;
-
 namespace SunEyeVision.Tool.DivideImage.Runtime;
 
 /// <summary>
-/// 划片拆分的稳定设置身份（原件 <c>IMVSDivideImageModu</c> 的四个算法参数）。
-/// 身份只在声明与绑定中使用，不依赖 CLR 反射。
+/// 划片拆分的稳定设置身份与取值边界（原件 <c>IMVSDivideImageModu</c> 的四个算法参数）。
+/// 参数页、结果、投影的声明在 <see cref="DivideImageManifest"/>；
+/// 这里只放被设置校验、编辑器与编辑期准入共同引用的常量，不再自带 Schema/读写。
 /// </summary>
 public static class DivideImageFields
 {
@@ -28,96 +27,9 @@ public static class DivideImageFields
     /// <summary>
     /// 重叠率上界 100：原厂 <c>IMVSDivideImageModuAlgorithmTab.xml</c> 声明
     /// <c>OverlaprateX/Y</c> 范围为 0~100，默认 0（验收 D2 证据）。
-    /// 100% 时按公式 <c>wTile=W</c>、<c>stepX=0</c>，各列分片位置重合但仍产出 nX×nY 个分片。
     /// </summary>
     public const int MaximumOverlapPercent = 100;
 
-    /// <summary>
-    /// 单方向划片数上界 50：原厂 <c>NumX/NumY</c> 声明范围 1~50（同上证据）。
-    /// </summary>
+    /// <summary>单方向划片数上界 50：原厂 <c>NumX/NumY</c> 声明范围 1~50（同上证据）。</summary>
     public const int MaximumDivisionsPerAxis = 50;
-
-
-    private static readonly TypeRef Integer = DataType.Integer;
-
-    public static ToolSchema Schema { get; } = new(new[]
-    {
-        new Port(PositionCorrectionEnabled, DataType.Boolean, EditModes: FieldEditModes.Constant,
-            DefaultPresence: FieldDefaultPresence.UseDeclaredDefault),
-        new Port(Columns, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant,
-            DefaultPresence: FieldDefaultPresence.UseDeclaredDefault),
-        new Port(Rows, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant,
-            DefaultPresence: FieldDefaultPresence.UseDeclaredDefault),
-        new Port(OverlapX, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant,
-            DefaultPresence: FieldDefaultPresence.UseDeclaredDefault),
-        new Port(OverlapY, Integer, Storage: NumericStorage.Int32, EditModes: FieldEditModes.Constant,
-            DefaultPresence: FieldDefaultPresence.UseDeclaredDefault)
-    }, Array.Empty<Port>(), new ToolPresentation(new[]
-    {
-        new FieldPresentation(PositionCorrectionEnabled, "位置修正", "ROI区域", 0, FieldEditorKind.Scalar)
-        {
-            Layout = new("基本参数", "ROI区域", AllowReference: false)
-        },
-        new FieldPresentation(Columns, "X方向划片数量", Section, 0, FieldEditorKind.Scalar)
-        {
-            Layout = new(Page, Section, Minimum: 1, Maximum: MaximumDivisionsPerAxis, DecimalPlaces: 0, AllowReference: false)
-        },
-        new FieldPresentation(Rows, "Y方向划片数量", Section, 1, FieldEditorKind.Scalar)
-        {
-            Layout = new(Page, Section, Minimum: 1, Maximum: MaximumDivisionsPerAxis, DecimalPlaces: 0, AllowReference: false)
-        },
-        new FieldPresentation(OverlapX, "X方向重叠率 (%)", Section, 2, FieldEditorKind.Scalar)
-        {
-            Layout = new(Page, Section, Minimum: MinimumOverlapPercent, Maximum: MaximumOverlapPercent,
-                DecimalPlaces: 0, AllowReference: false)
-        },
-        new FieldPresentation(OverlapY, "Y方向重叠率 (%)", Section, 3, FieldEditorKind.Scalar)
-        {
-            Layout = new(Page, Section, Minimum: MinimumOverlapPercent, Maximum: MaximumOverlapPercent,
-                DecimalPlaces: 0, AllowReference: false)
-        }
-    }));
-
-    public static InputValues Read(DivideImageSettings settings)
-    {
-        ArgumentNullException.ThrowIfNull(settings);
-        return new(Schema.Inputs, new Dictionary<string, object?>
-        {
-            [PositionCorrectionEnabled] = settings.PositionCorrectionEnabled,
-            [Columns] = settings.Columns,
-            [Rows] = settings.Rows,
-            [OverlapX] = settings.OverlapX,
-            [OverlapY] = settings.OverlapY
-        });
-    }
-
-    public static DivideImageSettings Apply(DivideImageSettings original, IReadOnlyDictionary<string, object?> changes)
-    {
-        ArgumentNullException.ThrowIfNull(original);
-        ArgumentNullException.ThrowIfNull(changes);
-        var values = Read(original).CopyValues().ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
-        foreach (var pair in changes)
-        {
-            if (!Schema.Inputs.Any(port => port.Id == pair.Key)) throw new ArgumentException("未声明的划片拆分字段：" + pair.Key);
-            values[pair.Key] = pair.Value;
-        }
-        return Materialize(new InputValues(Schema.Inputs, values));
-    }
-
-    public static DivideImageSettings Materialize(InputValues values)
-    {
-        ArgumentNullException.ThrowIfNull(values);
-        var candidate = new InputValues(Schema.Inputs, values.CopyValues());
-        var result = new DivideImageSettings
-        {
-            PositionCorrectionEnabled = candidate.Get<bool>(PositionCorrectionEnabled),
-            Columns = candidate.Get<long>(Columns),
-            Rows = candidate.Get<long>(Rows),
-            OverlapX = candidate.Get<long>(OverlapX),
-            OverlapY = candidate.Get<long>(OverlapY)
-        };
-        var errors = result.Validate();
-        if (errors.Count != 0) throw new ArgumentException(string.Join("；", errors.Select(error => error.Message)));
-        return result.Freeze();
-    }
 }

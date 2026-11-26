@@ -201,24 +201,32 @@ public static class MarkFindFields
             N("ScaleStart", nameof(MarkFindSettings.ScaleStart), "缩放下限", RunSection, 1, 0.1, 10,
                 pair: nameof(MarkFindSettings.ScaleEnd), pairLabel: "缩放范围"),
             N("ScaleEnd", nameof(MarkFindSettings.ScaleEnd), "缩放上限", RunSection, 1, 0.1, 10),
-            I("MaxOverlap", nameof(MarkFindSettings.MaxOverlap), "最大重叠率", RunSection, 80, 0, 100),
+            // 原厂 AlgorithmTab.xml 的 Expand（Tab_Run Params 页）收起时隐藏项之一。
+            I("MaxOverlap", nameof(MarkFindSettings.MaxOverlap), "最大重叠率", RunSection, 80, 0, 100, advanced: true),
             E("SortType", nameof(MarkFindSettings.SortType), "排序方式", RunSection, typeof(MarkFindSortType), 2,
-                Enum.GetNames<MarkFindSortType>(), new[] { "升序", "降序", "不排序" }),
-            I("MatchThresholdFlag", nameof(MarkFindSettings.MatchThresholdMode), "匹配阈值使能", RunSection, 0, 0, 10, advanced: true),
-            I("MatchThresholdHigh", nameof(MarkFindSettings.MatchThreshold), "匹配阈值", RunSection, 40, 0, 255, advanced: true),
+                Enum.GetNames<MarkFindSortType>(), new[] { "升序", "降序", "不排序" }, advanced: true),
+            // 证据 IMVSMarkFindModuAlgorithmTab.xml：MatchThresholdFlag 是 Enumeration
+            // （EnumEntrys = Auto / Model / Manual，CurValue 默认 0）。
+            E("MatchThresholdFlag", nameof(MarkFindSettings.MatchThresholdMode), "匹配阈值使能", RunSection,
+                typeof(MarkFindMatchThresholdMode), 0, Enum.GetNames<MarkFindMatchThresholdMode>(),
+                new[] { "自动", "模型", "手动" }, advanced: true),
+            // 证据同上的 MultiTrigger：CurValue=2（Manual）时显示 MatchThresholdHigh。
+            I("MatchThresholdHigh", nameof(MarkFindSettings.MatchThreshold), "匹配阈值", RunSection, 40, 0, 255,
+                when: nameof(MarkFindSettings.MatchThresholdMode)),
             B("SpotterFlag", nameof(MarkFindSettings.SpotterEnabled), "斑点定位", RunSection, false, advanced: true),
             I("MatchExtentRate", nameof(MarkFindSettings.MatchExtentRate), "匹配范围比例", RunSection, 0, 0, 100, advanced: true),
             I("TimeOut", nameof(MarkFindSettings.TimeOut), "时间限制", RunSection, 0, 0, 600_000, advanced: true),
-            B("OutLineEnable", nameof(MarkFindSettings.OutlineEnabled), "轮廓输出使能", RunSection, true),
+            // 原厂 Expand（Tab_Run Params 页）收起时隐藏项之一。
+            B("OutLineEnable", nameof(MarkFindSettings.OutlineEnabled), "轮廓输出使能", RunSection, true, advanced: true),
             I("MarkLocationType", nameof(MarkFindSettings.MarkLocationType), "标记定位方式", RunSection, 0, 0, 10, advanced: true),
 
             // 运行参数 / 高级参数：X/Y 缩放范围（原件 RangScaleX/RangScaleY）
             N("ScaleXStart", nameof(MarkFindSettings.ScaleXStart), "X缩放下限", RunSection, 1, 0.1, 10,
-                pair: nameof(MarkFindSettings.ScaleXEnd), pairLabel: "X缩放范围", advanced: true),
-            N("ScaleXEnd", nameof(MarkFindSettings.ScaleXEnd), "X缩放上限", RunSection, 1, 0.1, 10, advanced: true),
+                pair: nameof(MarkFindSettings.ScaleXEnd), pairLabel: "X缩放范围", advanced: false),
+            N("ScaleXEnd", nameof(MarkFindSettings.ScaleXEnd), "X缩放上限", RunSection, 1, 0.1, 10, advanced: false),
             N("ScaleYStart", nameof(MarkFindSettings.ScaleYStart), "Y缩放下限", RunSection, 1, 0.1, 10,
-                pair: nameof(MarkFindSettings.ScaleYEnd), pairLabel: "Y缩放范围", advanced: true),
-            N("ScaleYEnd", nameof(MarkFindSettings.ScaleYEnd), "Y缩放上限", RunSection, 1, 0.1, 10, advanced: true),
+                pair: nameof(MarkFindSettings.ScaleYEnd), pairLabel: "Y缩放范围", advanced: false),
+            N("ScaleYEnd", nameof(MarkFindSettings.ScaleYEnd), "Y缩放上限", RunSection, 1, 0.1, 10, advanced: false),
 
             // 结果判断：数量限位
             B("NumLimitEnable", nameof(MarkFindSettings.CountLimitEnabled), "匹配个数判断", JudgeSection, false),
@@ -228,48 +236,49 @@ public static class MarkFindFields
                 when: nameof(MarkFindSettings.CountLimitEnabled)),
 
             // 结果判断：位置/角度/分数限位
-            B("AngleLimitEnable", nameof(MarkFindSettings.AngleLimitEnabled), "角度判断", JudgeSection, false, advanced: true),
+            B("AngleLimitEnable", nameof(MarkFindSettings.AngleLimitEnabled), "角度判断", JudgeSection, false, advanced: false),
             N("AngleLimitLow", nameof(MarkFindSettings.AngleLimitLow), "角度下限", JudgeSection, -180, -180, 180,
-                when: nameof(MarkFindSettings.AngleLimitEnabled), pair: nameof(MarkFindSettings.AngleLimitHigh), pairLabel: "角度范围", advanced: true),
+                when: nameof(MarkFindSettings.AngleLimitEnabled), pair: nameof(MarkFindSettings.AngleLimitHigh), pairLabel: "角度范围", advanced: false),
             N("AngleLimitHigh", nameof(MarkFindSettings.AngleLimitHigh), "角度上限", JudgeSection, 180, -180, 180,
-                when: nameof(MarkFindSettings.AngleLimitEnabled), advanced: true),
-            B("ScoreLimitEnable", nameof(MarkFindSettings.ScoreLimitEnabled), "分数判断", JudgeSection, false),
+                when: nameof(MarkFindSettings.AngleLimitEnabled), advanced: false),
+            // 原厂 Expand（ResultShow 页）收起时隐藏的 5 个判定开关之一。
+            B("ScoreLimitEnable", nameof(MarkFindSettings.ScoreLimitEnabled), "分数判断", JudgeSection, false, advanced: true),
             N("ScoreLimitLow", nameof(MarkFindSettings.ScoreLimitLow), "分数下限", JudgeSection, 0, 0, 1,
                 when: nameof(MarkFindSettings.ScoreLimitEnabled), pair: nameof(MarkFindSettings.ScoreLimitHigh), pairLabel: "分数范围"),
             N("ScoreLimitHigh", nameof(MarkFindSettings.ScoreLimitHigh), "分数上限", JudgeSection, 1, 0, 1,
                 when: nameof(MarkFindSettings.ScoreLimitEnabled)),
-            B("ScaleXLimitEnable", nameof(MarkFindSettings.ScaleXLimitEnabled), "X缩放判断", JudgeSection, false, advanced: true),
+            B("ScaleXLimitEnable", nameof(MarkFindSettings.ScaleXLimitEnabled), "X缩放判断", JudgeSection, false, advanced: false),
             N("ScaleXLimitLow", nameof(MarkFindSettings.ScaleXLimitLow), "X缩放下限", JudgeSection, 0.1, 0.1, 10,
-                when: nameof(MarkFindSettings.ScaleXLimitEnabled), pair: nameof(MarkFindSettings.ScaleXLimitHigh), pairLabel: "X缩放范围", advanced: true),
+                when: nameof(MarkFindSettings.ScaleXLimitEnabled), pair: nameof(MarkFindSettings.ScaleXLimitHigh), pairLabel: "X缩放范围", advanced: false),
             N("ScaleXLimitHigh", nameof(MarkFindSettings.ScaleXLimitHigh), "X缩放上限", JudgeSection, 10, 0.1, 10,
-                when: nameof(MarkFindSettings.ScaleXLimitEnabled), advanced: true),
-            B("ScaleYLimitEnable", nameof(MarkFindSettings.ScaleYLimitEnabled), "Y缩放判断", JudgeSection, false, advanced: true),
+                when: nameof(MarkFindSettings.ScaleXLimitEnabled), advanced: false),
+            B("ScaleYLimitEnable", nameof(MarkFindSettings.ScaleYLimitEnabled), "Y缩放判断", JudgeSection, false, advanced: false),
             N("ScaleYLimitLow", nameof(MarkFindSettings.ScaleYLimitLow), "Y缩放下限", JudgeSection, 0.1, 0.1, 10,
-                when: nameof(MarkFindSettings.ScaleYLimitEnabled), pair: nameof(MarkFindSettings.ScaleYLimitHigh), pairLabel: "Y缩放范围", advanced: true),
+                when: nameof(MarkFindSettings.ScaleYLimitEnabled), pair: nameof(MarkFindSettings.ScaleYLimitHigh), pairLabel: "Y缩放范围", advanced: false),
             N("ScaleYLimitHigh", nameof(MarkFindSettings.ScaleYLimitHigh), "Y缩放上限", JudgeSection, 10, 0.1, 10,
-                when: nameof(MarkFindSettings.ScaleYLimitEnabled), advanced: true),
+                when: nameof(MarkFindSettings.ScaleYLimitEnabled), advanced: false),
 
             // 结果判断：匹配点/Box 点限位
             B("MatchPointXLimitEnable", nameof(MarkFindSettings.MatchPointXLimitEnabled), "匹配点X判断", JudgeSection, false, advanced: true),
             N("MatchPointXLimitLow", nameof(MarkFindSettings.MatchPointXLimitLow), "匹配点X下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.MatchPointXLimitEnabled), pair: nameof(MarkFindSettings.MatchPointXLimitHigh), pairLabel: "匹配点X范围", advanced: true),
+                when: nameof(MarkFindSettings.MatchPointXLimitEnabled), pair: nameof(MarkFindSettings.MatchPointXLimitHigh), pairLabel: "匹配点X范围", advanced: false),
             N("MatchPointXLimitHigh", nameof(MarkFindSettings.MatchPointXLimitHigh), "匹配点X上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.MatchPointXLimitEnabled), advanced: true),
+                when: nameof(MarkFindSettings.MatchPointXLimitEnabled), advanced: false),
             B("MatchPointYLimitEnable", nameof(MarkFindSettings.MatchPointYLimitEnabled), "匹配点Y判断", JudgeSection, false, advanced: true),
             N("MatchPointYLimitLow", nameof(MarkFindSettings.MatchPointYLimitLow), "匹配点Y下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.MatchPointYLimitEnabled), pair: nameof(MarkFindSettings.MatchPointYLimitHigh), pairLabel: "匹配点Y范围", advanced: true),
+                when: nameof(MarkFindSettings.MatchPointYLimitEnabled), pair: nameof(MarkFindSettings.MatchPointYLimitHigh), pairLabel: "匹配点Y范围", advanced: false),
             N("MatchPointYLimitHigh", nameof(MarkFindSettings.MatchPointYLimitHigh), "匹配点Y上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.MatchPointYLimitEnabled), advanced: true),
+                when: nameof(MarkFindSettings.MatchPointYLimitEnabled), advanced: false),
             B("BoxPointXLimitEnable", nameof(MarkFindSettings.BoxPointXLimitEnabled), "Box点X判断", JudgeSection, false, advanced: true),
             N("BoxPointXLimitLow", nameof(MarkFindSettings.BoxPointXLimitLow), "Box点X下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.BoxPointXLimitEnabled), pair: nameof(MarkFindSettings.BoxPointXLimitHigh), pairLabel: "Box点X范围", advanced: true),
+                when: nameof(MarkFindSettings.BoxPointXLimitEnabled), pair: nameof(MarkFindSettings.BoxPointXLimitHigh), pairLabel: "Box点X范围", advanced: false),
             N("BoxPointXLimitHigh", nameof(MarkFindSettings.BoxPointXLimitHigh), "Box点X上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.BoxPointXLimitEnabled), advanced: true),
+                when: nameof(MarkFindSettings.BoxPointXLimitEnabled), advanced: false),
             B("BoxPointYLimitEnable", nameof(MarkFindSettings.BoxPointYLimitEnabled), "Box点Y判断", JudgeSection, false, advanced: true),
             N("BoxPointYLimitLow", nameof(MarkFindSettings.BoxPointYLimitLow), "Box点Y下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.BoxPointYLimitEnabled), pair: nameof(MarkFindSettings.BoxPointYLimitHigh), pairLabel: "Box点Y范围", advanced: true),
+                when: nameof(MarkFindSettings.BoxPointYLimitEnabled), pair: nameof(MarkFindSettings.BoxPointYLimitHigh), pairLabel: "Box点Y范围", advanced: false),
             N("BoxPointYLimitHigh", nameof(MarkFindSettings.BoxPointYLimitHigh), "Box点Y上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(MarkFindSettings.BoxPointYLimitEnabled), advanced: true)
+                when: nameof(MarkFindSettings.BoxPointYLimitEnabled), advanced: false)
         };
         var names = fields.Select(field => field.Name).ToArray();
         if (names.Distinct(StringComparer.Ordinal).Count() != names.Length)
@@ -302,9 +311,10 @@ public static class MarkFindFields
                 PairMinimum: field.PairWith is null ? null : field.PairMinimum,
                 PairMaximum: field.PairWith is null ? null : field.PairMaximum,
                 PairDisplayName: field.PairLabel);
+            var displayType = DisplayTypeOf(field);
             presentations.Add(new FieldPresentation(field.Id, field.Label, field.Section, index,
                 field.Choices.Count == 0 ? FieldEditorKind.Scalar : FieldEditorKind.Choice,
-                field.Choices, field.ChoiceLabels) { Layout = layout });
+                field.Choices, field.ChoiceLabels, displayType) { Layout = layout });
         }
         return new ToolSchema(ports, Array.Empty<Port>(), new ToolPresentation(presentations));
     }
@@ -316,7 +326,20 @@ public static class MarkFindFields
     private static object VisibilityValue(MarkFindFieldSpec controller)
         => controller.Type.IsEnum ? "Manual" : true;
 
-    private static TypeRef PortType(MarkFindFieldSpec field)
+    /// <summary>
+    /// 原厂 DisplayType：选项→Enumeration；成对→Bettween；布尔→Boolean；文本→String；整数/浮点→Integer/Float。
+    /// manifest 复用同一规则，避免两处各写一份。
+    /// </summary>
+    internal static string DisplayTypeOf(MarkFindFieldSpec field)
+        => field.Choices.Count != 0 ? DeclaredFieldTemplateKey.Enumeration
+            : field.PairWith is not null
+                ? field.Type == typeof(int) ? DeclaredFieldTemplateKey.IntegerBettween : DeclaredFieldTemplateKey.FloatBettween
+            : field.Type == typeof(bool) ? DeclaredFieldTemplateKey.Boolean
+            : field.Type == typeof(string) ? DeclaredFieldTemplateKey.String
+            : field.Type == typeof(int) ? DeclaredFieldTemplateKey.Integer
+            : DeclaredFieldTemplateKey.Float;
+
+    internal static TypeRef PortType(MarkFindFieldSpec field)
         => field.Type == typeof(bool) ? DataType.Boolean
             : field.Type == typeof(int) ? DataType.Integer
             : field.Type == typeof(double) ? DataType.Number

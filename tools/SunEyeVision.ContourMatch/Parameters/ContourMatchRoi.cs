@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SunEyeVision.Plugin.Contracts;
 
@@ -33,6 +34,28 @@ public static class ContourMatchRoi
 
     public const string LocalDocumentId = "input.roi.local";
     public const int MaximumInherited = RoiDocumentValue.MaximumInheritedCount;
+
+    public static RoiInheritanceSpec Inheritance { get; } = new(
+        ModeId, Local,
+        new(Rectangle, RectangleParameters, RectangleSource,
+            new[] { "center-x", "center-y", "width", "height", "angle-degrees" }, "rectangle"),
+        new(Annulus, AnnulusParameters, AnnulusSource,
+            new[] { "center-x", "center-y", "inner-radius", "outer-radius", "start-degrees", "sweep-degrees" }, "annulus"),
+        MaximumInherited);
+
+    /// <summary>结果视图与参数页共用的 ROI 编辑声明（原件 ROISelecter 常驻语义）。</summary>
+    public static RoiEditDeclaration RoiEdit { get; } = new(
+        ContourMatchSearchRois.LocalId, ContourMatchSchema.ImageInput,
+        new[]
+        {
+            new RoiEditGroupDeclaration(RoiDocumentValue.Inspection, "形状", false,
+                ContourMatchSearchRois.MaximumLocalInspectionCount, RoiDocumentValue.FullDomain),
+            new RoiEditGroupDeclaration(RoiDocumentValue.Mask, "屏蔽区", true,
+                ContourMatchSearchRois.MaximumLocalMaskCount, RoiDocumentValue.None)
+        },
+        Inheritance: Inheritance,
+        MaskInheritance: new RoiMaskInheritanceDeclaration(MaskInherited, MaskSource, MaximumInherited),
+        ItemNames: new[] { "检测区域", "屏蔽区域" });
     private static readonly Guid InheritedItemId = new("c8a845d3-1695-4761-ac6b-165fe86dc248");
 
     public static TypeRef RectangleType { get; } = TypeRef.RecordOf("contourmatch.roi.rectangle", new[]
@@ -97,7 +120,7 @@ public static class ContourMatchRoi
     {
         var mode = ReadMode(inputs);
         var mask = (local ?? RoiDocumentValue.Empty).Get<RecordValue>(RoiDocumentValue.Mask);
-        if (mode == Local) return local ?? RoiDocumentValue.Empty;
+        if (mode == Local) return MaterializeMaskInheritance(inputs, local ?? RoiDocumentValue.Empty);
 
         RecordValue shape;
         if (mode == Rectangle)
@@ -133,7 +156,8 @@ public static class ContourMatchRoi
         }
 
         var item = RoiDocumentValue.Item(InheritedItemId, "继承区域", shape);
-        return RoiDocumentValue.Root(RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { item }), mask);
+        return MaterializeMaskInheritance(inputs,
+            RoiDocumentValue.Root(RoiDocumentValue.Group(RoiDocumentValue.Explicit, new[] { item }), mask));
     }
 
     public static IReadOnlyList<string> ActiveInputs(FieldSettings fields, IEnumerable<Port> inputs)
@@ -149,8 +173,45 @@ public static class ContourMatchRoi
         else if (mode == AnnulusParameters)
             foreach (var member in new[] { "center-x", "center-y", "inner-radius", "outer-radius", "start-degrees", "sweep-degrees" })
                 active.Add(AnnulusSource + "." + member);
+        // 屏蔽区继承是运行期搜索域的一部分，必须随执行快照进入 Runtime；不能只留在
+        // NativeRoiGroupComposer 的预览字段里。
+        active.Add(MaskInherited);
+        if (fields.Read(MaskInherited) is ConstantSetting { Value: true }) active.Add(MaskSource);
         return Array.AsReadOnly(inputs.Where(port => !own.Contains(port.Id) || active.Contains(port.Id))
             .Select(port => port.Id).ToArray());
+    }
+
+    private static RecordValue MaterializeMaskInheritance(InputValues inputs, RecordValue document)
+    {
+        if (!inputs.Contains(MaskInherited) || inputs.Get<bool>(MaskInherited) is not true) return document;
+        if (!inputs.Contains(MaskSource)) throw new ArgumentException("已启用屏蔽区继承，但没有屏蔽区坐标来源。");
+        var source = inputs.Get<SequenceValue>(MaskSource);
+        if (source.Count > MaximumInherited) throw new ArgumentException($"继承屏蔽区最多支持 {MaximumInherited} 个多边形。");
+        var items = source.Cast<string>().Select((text, index) =>
+        {
+            if (text.Length > 1023) throw new ArgumentException($"继承屏蔽区 {index + 1} 的坐标文本超过长度上限。");
+            var values = text.Split(',');
+            if (values.Length < 6 || values.Length > RoiDocumentValue.MaximumVertices * 2 || values.Length % 2 != 0)
+                throw new ArgumentException($"继承屏蔽区 {index + 1} 需要 3 至 {RoiDocumentValue.MaximumVertices} 对坐标。");
+            var points = new List<object?>(values.Length / 2);
+            for (var point = 0; point < values.Length; point += 2)
+            {
+                if (!double.TryParse(values[point], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
+                    || !double.TryParse(values[point + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
+                    || !double.IsFinite(x) || !double.IsFinite(y))
+                    throw new ArgumentException($"继承屏蔽区 {index + 1} 包含无效坐标。");
+                points.Add(RoiDocumentValue.Point(x, y));
+            }
+            var shape = new RecordValue(RoiDocumentValue.ShapeType, new Dictionary<string, object?>
+            {
+                ["kind"] = "polygon", ["vertices"] = new SequenceValue(TypeRef.SequenceOf(RoiDocumentValue.PointType), points)
+            });
+            return RoiDocumentValue.Item(new Guid(0x00a9ef00 + index, 0x6985, 0x4e44, 0xa8, 0x82, 0xf9, 0x16, 0x75, 0x2a, 0x53, 0x91),
+                "继承屏蔽区" + (index + 1), shape);
+        }).ToArray();
+        var inspection = document.Get<RecordValue>(RoiDocumentValue.Inspection);
+        return RoiDocumentValue.Root(inspection,
+            RoiDocumentValue.Group(items.Length == 0 ? RoiDocumentValue.None : RoiDocumentValue.Explicit, items));
     }
 
     private static double Number(InputValues inputs, string id)

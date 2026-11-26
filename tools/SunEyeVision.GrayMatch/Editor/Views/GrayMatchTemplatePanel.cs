@@ -147,7 +147,9 @@ public sealed class GrayMatchTemplatePanel : UserControl
                 _ => throw new InvalidOperationException("模板参数“" + spec.Label + "”必须是固定值，不能绑定引用或表达式。")
             };
         }
-        return GrayMatchFields.Materialize(new InputValues(GrayMatchFields.Schema.Inputs, values));
+        // 声明与往返由工具基类统一承担（工具不再自建 Schema/Materialize）。
+        var tool = new GrayMatchTool();
+        return (GrayMatchSettings)tool.MaterializeSettings(new InputValues(tool.SettingsSchema.Inputs, values));
     }
 
     // ── 导出 / 导入 ─────────────────────────────────────────────────────

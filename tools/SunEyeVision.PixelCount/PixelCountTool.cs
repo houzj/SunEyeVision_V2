@@ -1,16 +1,16 @@
+using System.Globalization;
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Contracts.Manifest;
 
 namespace SunEyeVision.Tool.PixelCount.Runtime;
 
 /// <summary>
 /// 像素统计（原件 <c>IMVSPixelCountModuVA</c>）的 Runtime 入口。
-/// 一次调用只做一次同步统计；调度、输入准备与资源生命周期属于宿主。
+/// 声明与契约生成全部由 <see cref="ToolDefinition{TSettings,TOutput}"/> 承担，
+/// 本类只保留：槽位扩展、区间列表读写与算法会话。
 /// </summary>
-public sealed class PixelCountTool : IToolDefinition<PixelCountSettings, PixelCountOutput>,
-    IToolSettingsFields, IToolCatalogProvider, IToolResultPresentationProvider, IToolResultDisplayProvider,
-    IToolRuntimeInitialization, IToolManualReferenceSources
+public sealed class PixelCountTool : ToolDefinition<PixelCountSettings, PixelCountOutput>, IToolRuntimeInitialization
 {
     public const string Id = "PixelCount";
     public const string ImageInput = "input.image";
@@ -19,92 +19,107 @@ public sealed class PixelCountTool : IToolDefinition<PixelCountSettings, PixelCo
     /// <summary>原厂 InputMask（IMAGE）。</summary>
     public const string MaskInput = "input.mask";
 
-    private static readonly ResultProjectionDescriptor Projection = BuildProjection();
+    protected override ToolManifest Manifest => PixelCountManifest.Value;
 
-    public string ToolId => Id;
-    public ToolCatalogDescriptor Catalog { get; } =
-        new("像素统计", "统计图像中落在各灰度区间的像素数与占比，并按数量/比率判定", "pixel-count", "测量", 9, "DEFAULT");
-    public ToolSchema SettingsSchema => PixelCountFields.Schema;
-    public ToolSchema ResultSchema { get; } = new(Array.Empty<Port>(), PixelCountOutput.Ports,
-        outputDisplay: PixelCountOutput.Display);
-    public ToolSchema DisplaySettingsSchema => PixelCountResultDisplay.Schema;
-    public ResultProjectionDescriptor ResultProjection => Projection;
-    public ResultDisplayDescriptor ResultDisplay => PixelCountResultDisplay.Descriptor;
-    public IReadOnlyList<ManualReferenceSource> ManualReferenceSources { get; } = Array.AsReadOnly(new[]
-    {
-        new ManualReferenceSource(PixelCountOutput.Status),
-        new ManualReferenceSource(PixelCountOutput.RunTime),
-        new ManualReferenceSource(PixelCountOutput.Count),
-        new ManualReferenceSource(PixelCountOutput.Ratio)
-    });
+    /// <summary>执行 Schema：描述 = 输入 + 参数，供宿主装配。</summary>
+    public static ToolSchema Schema => new PixelCountTool().Describe();
 
-    private static readonly Port ImagePort = new(ImageInput, TypeRef.ResourceOf(ResourceKind.Image), EditModes: FieldEditModes.Reference);
-    private static readonly Port RoiPort = new(RoiInput, TypeRef.ResourceOf(ResourceKind.Region), Required: false, Nullable: true, EditModes: FieldEditModes.Reference);
-    private static readonly Port MaskPort = new(MaskInput, TypeRef.ResourceOf(ResourceKind.Image), Required: false, Nullable: true, EditModes: FieldEditModes.Reference);
+    public override IToolSession<PixelCountSettings, PixelCountOutput> CreateSession() => new PixelCountSession();
 
-    public static ToolSchema Schema { get; } = BuildSchema();
-
-    private static ToolSchema BuildSchema()
-    {
-        // The VM presents only ImageSource as a standalone input row. ROI, mask,
-        // local ROI document and Assist fields are owned by the composite groups.
-        // Keeping their ports in the schema preserves execution/reference identity
-        // without leaking the host wiring rows into the basic tab.
-        var inputs = new[] { ImagePort, RoiPort, MaskPort };
-        var compositeInputs = new[] { new Port(PixelCountLocalRoi.InputId, RoiDocumentValue.Declaration,
-            Required: false, EditModes: FieldEditModes.Constant) };
-        return new ToolSchema(inputs.Concat(compositeInputs).Concat(PixelCountRoi.Ports).Concat(PixelCountAssist.Ports), PixelCountOutput.Ports,
-            new ToolPresentation(new[] { PixelCountParameterDefinition.Instance.InputPresentation(ImagePort, 0) }),
-            workflowImageInputId: ImageInput, outputDisplay: PixelCountOutput.Display);
-    }
-    public ToolSchema Describe() => Schema;
-
-    private static ResultProjectionDescriptor BuildProjection()
-    {
-        ResultFieldPath Cell(params string[] member) => new(PixelCountOutput.Rows, member);
-        var columns = new[]
-        {
-            new ResultColumnDescriptor("range-index", "序号", Cell(PixelCountOutput.RangeIndex), DecimalPlaces: 0),
-            new ResultColumnDescriptor("threshold-min", "灰度下限", Cell(PixelCountOutput.ThresholdMin), DecimalPlaces: 0),
-            new ResultColumnDescriptor("threshold-max", "灰度上限", Cell(PixelCountOutput.ThresholdMax), DecimalPlaces: 0),
-            new ResultColumnDescriptor("count", "像素数", Cell(PixelCountOutput.RangeCount), DecimalPlaces: 0),
-            new ResultColumnDescriptor("ratio", "比率", Cell(PixelCountOutput.RangeRatio), DecimalPlaces: 4),
-            new ResultColumnDescriptor("judgment", "判定", Cell(PixelCountOutput.JudgmentPassed))
-        };
-        var projection = new ResultProjectionDescriptor(ResultProjectionKind.StandardTable, ResultCardinality.Many,
-            columns, new ResultFieldPath(PixelCountOutput.Rows), PixelCountOutput.RangeIndex);
-        var errors = projection.Validate(new PixelCountTool().ResultSchema);
-        if (errors.Count != 0)
-            throw new InvalidOperationException("PixelCount 结果投影声明无效：" + string.Join("；", errors.Select(error => error.Message)));
-        PixelCountResultDisplay.Descriptor.Validate(new PixelCountTool().ResultSchema);
-        return projection;
-    }
-
-    public IReadOnlyList<Diagnostic> Validate(PixelCountSettings settings)
+    public override IReadOnlyList<Diagnostic> Validate(PixelCountSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
         return settings.Validate();
     }
 
-    public ToolCapabilities Capabilities() => new(new[] { "halcon" });
+    public override ToolCapabilities Capabilities() => new(new[] { "halcon" });
 
     public void InitializeRuntime() => HalconPlatform.Initialise();
 
-    public IToolSession<PixelCountSettings, PixelCountOutput> CreateSession() => new PixelCountSession();
+    // ---------------- 32 组区间槽位（原厂 IDynamicChild 的静态等价） ----------------
 
-    public InputValues ReadSettings(object settings) => PixelCountFields.Read(RequireSettings(settings));
+    protected override ToolSchema ExtendSettings(ToolSchema schema) => WithRangeSlots(schema);
 
-    public object MaterializeSettings(InputValues values) => PixelCountFields.Materialize(values);
+    protected override ToolSchema ExtendExecution(ToolSchema schema) => WithRangeSlots(schema);
 
-    public InputValues CreateDisplaySettings() => PixelCountResultDisplay.Defaults();
-
-    public ResultDisplayAppearance CaptureResultDisplay(FieldSettings displayFields)
+    private static ToolSchema WithRangeSlots(ToolSchema schema)
     {
-        ArgumentNullException.ThrowIfNull(displayFields);
-        return PixelCountResultDisplay.Capture(displayFields);
+        var ports = new List<Port>(schema.Inputs);
+        var presentations = new List<FieldPresentation>(
+            schema.Presentation?.Fields ?? Array.Empty<FieldPresentation>());
+        var order = presentations.Count == 0 ? 0 : presentations.Max(field => field.Order) + 1;
+        for (var index = 0; index < PixelCountRanges.MaximumCount; index++)
+        {
+            var label = index.ToString(CultureInfo.InvariantCulture);
+            // 槽位端口可缺省：基类反射只覆盖标量参数，槽位值由本类的读写补进来。
+            var minimum = new Port(PixelCountFields.RangeMinimum(index), DataType.Integer,
+                Required: false, EditModes: FieldEditModes.Constant | FieldEditModes.Reference);
+            var maximum = new Port(PixelCountFields.RangeMaximum(index), DataType.Integer,
+                Required: false, EditModes: FieldEditModes.Constant | FieldEditModes.Reference);
+            ports.Add(minimum);
+            ports.Add(maximum);
+            presentations.Add(new FieldPresentation(minimum.Id, label, "阈值范围", order++,
+                FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.IntegerBettween)
+            {
+                Layout = new FieldLayout("运行参数", "阈值范围",
+                    Minimum: PixelCountRanges.MinimumGray, Maximum: PixelCountRanges.MaximumGray,
+                    DecimalPlaces: 0, AllowReference: true, Increment: 1,
+                    PairWith: maximum.Id, PairMinimum: PixelCountRanges.MinimumGray,
+                    PairMaximum: PixelCountRanges.MaximumGray, PairDisplayName: label)
+            });
+            presentations.Add(new FieldPresentation(maximum.Id, "上限", "阈值范围", order++,
+                FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.Integer)
+            {
+                Layout = new FieldLayout("运行参数", "阈值范围",
+                    Minimum: PixelCountRanges.MinimumGray, Maximum: PixelCountRanges.MaximumGray,
+                    DecimalPlaces: 0, AllowReference: true, Increment: 1)
+            });
+        }
+        return new ToolSchema(ports, schema.Outputs, new ToolPresentation(presentations),
+            schema.WorkflowImageInputId, schema.OutputDisplay, schema.ControlOutputs,
+            schema.RoiGroups, schema.AssistGroups, schema.ExternalInputs);
+    }
+
+    public override InputValues ReadSettings(object settings)
+    {
+        var typed = RequireSettings(settings);
+        // 基类只读标量参数；槽位值在这里补齐，保证 InputValues 覆盖完整端口集。
+        var values = base.ReadSettings(typed).CopyValues()
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        for (var index = 0; index < PixelCountRanges.MaximumCount; index++)
+        {
+            var range = index < typed.Ranges.Count ? typed.Ranges[index] : PixelCountRanges.Default;
+            values[PixelCountFields.RangeMinimum(index)] = (long)range.Minimum;
+            values[PixelCountFields.RangeMaximum(index)] = (long)range.Maximum;
+        }
+        return new InputValues(SettingsSchema.Inputs, values);
+    }
+
+    public override object MaterializeSettings(InputValues values)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        var scalars = (PixelCountSettings)base.MaterializeSettings(values);
+        var ranges = new List<PixelCountRange>(PixelCountRanges.MaximumCount);
+        for (var index = 0; index < PixelCountRanges.MaximumCount; index++)
+        {
+            var minimum = values.Contains(PixelCountFields.RangeMinimum(index))
+                ? Convert.ToInt64(values.Get<object?>(PixelCountFields.RangeMinimum(index)),
+                    CultureInfo.InvariantCulture)
+                : PixelCountRanges.Default.Minimum;
+            var maximum = values.Contains(PixelCountFields.RangeMaximum(index))
+                ? Convert.ToInt64(values.Get<object?>(PixelCountFields.RangeMaximum(index)),
+                    CultureInfo.InvariantCulture)
+                : PixelCountRanges.Default.Maximum;
+            ranges.Add(new(checked((int)minimum), checked((int)maximum)));
+        }
+        var result = (scalars with { Ranges = ranges.AsReadOnly() }).Freeze();
+        // 区间参与准入校验（上下限、条数），必须在校验前补齐。
+        var errors = result.Validate();
+        if (errors.Count != 0)
+            throw new ArgumentException(string.Join("；", errors.Select(error => error.Message)));
+        return result;
     }
 
     private static PixelCountSettings RequireSettings(object settings) => settings as PixelCountSettings
         ?? throw new ArgumentException("像素统计设置类型不正确。");
 }
-

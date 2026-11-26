@@ -1,60 +1,33 @@
 using SunEyeVision.HalAdapter;
 using SunEyeVision.Plugin.Contracts;
-using SunEyeVision.Plugin.Contracts.Results.Presentation;
+using SunEyeVision.Plugin.Contracts.Manifest;
 
 namespace SunEyeVision.Tool.ColorExtract.Runtime;
 
-/// <summary>色彩提取（原件 IMVSColorExtractModu）Runtime 入口；一次调用只处理一帧。</summary>
-public sealed class ColorExtractTool : IToolDefinition<ColorExtractSettings, ColorExtractOutput>, IToolSettingsFields,
-    IToolCatalogProvider, IToolResultPresentationProvider, IToolRuntimeInitialization, IToolKnownSettingsValidation,
-    IToolDisplaySettingsProvider
+/// <summary>
+/// 色彩提取（原件 IMVSColorExtractModu）Runtime 入口；一次调用只处理一帧。
+/// 声明与契约生成由 <see cref="ToolDefinition{TSettings,TOutput}"/> 承担；
+/// 编辑期的区间文本与面积上下限准入保留在工具侧。
+/// </summary>
+public sealed class ColorExtractTool : ToolDefinition<ColorExtractSettings, ColorExtractOutput>,
+    IToolRuntimeInitialization, IToolKnownSettingsValidation
 {
     public const string Id = "ColorExtract";
     public const string ImageInput = "input.image";
 
-    public string ToolId => Id;
+    protected override ToolManifest Manifest => ColorExtractManifest.Value;
 
-    // 分类必须与工具箱目录里已核实映射的分类一致（原件位于「颜色处理」）。
-    public ToolCatalogDescriptor Catalog { get; } = new("颜色抽取", "按颜色区间提取符合范围的像素并输出提取面积与外接矩形", "color-extract", "颜色处理", 10, "DEFAULT");
+    /// <summary>执行 Schema：描述 = 输入 + 参数，供宿主装配。</summary>
+    public static ToolSchema Schema => new ColorExtractTool().Describe();
 
-    public ToolSchema SettingsSchema => ColorExtractFields.Schema;
+    public override IToolSession<ColorExtractSettings, ColorExtractOutput> CreateSession()
+        => new ColorExtractSession();
 
-    public ToolSchema ResultSchema { get; } = new(Array.Empty<Port>(), ColorExtractOutput.Ports, outputDisplay: ColorExtractOutput.Display);
-
-    public ResultProjectionDescriptor ResultProjection { get; } = new(ResultProjectionKind.PropertyList, ResultCardinality.One, new[]
+    public override IReadOnlyList<Diagnostic> Validate(ColorExtractSettings settings)
     {
-        new ResultColumnDescriptor("DEFAULT", "提取图像", new(ColorExtractOutput.Image)),
-        new ResultColumnDescriptor("area", "提取总面积", new(ColorExtractOutput.TotalArea), DecimalPlaces: 0),
-        new ResultColumnDescriptor("roi", "提取区域外接矩形", new(ColorExtractOutput.Roi)),
-        new ResultColumnDescriptor("time", "模块耗时", new(ColorExtractOutput.ModuleRunTime), "ms", DecimalPlaces: 3)
-    });
-
-    public InputValues ReadSettings(object settings) => ColorExtractFields.Read(RequireSettings(settings));
-
-    public object MaterializeSettings(InputValues values) => ColorExtractFields.Materialize(values);
-
-    public ToolSchema DisplaySettingsSchema => ColorExtractResultDisplay.Schema;
-    public InputValues CreateDisplaySettings() => ColorExtractResultDisplay.Defaults();
-
-    private static ColorExtractSettings RequireSettings(object settings) => settings as ColorExtractSettings
-        ?? throw new ArgumentException("色彩提取设置类型不正确。");
-
-    public ToolSchema Describe() => Schema;
-
-    public static ToolSchema Schema { get; } = new(new[]
-    {
-        new Port(ImageInput, TypeRef.ResourceOf(ResourceKind.Image), EditModes: FieldEditModes.Reference)
-    }, ColorExtractOutput.Ports, new ToolPresentation(new[]
-    {
-        // 原厂基本参数页的图像输入行；缺少呈现声明会让输入区组装成空页。
-        new FieldPresentation(ImageInput, "图像输入", "基本参数", 0, FieldEditorKind.Image)
-        {
-            Layout = new("基本参数", "图像输入", AllowReference: true)
-        }
-    }),
-        workflowImageInputId: ImageInput, outputDisplay: ColorExtractOutput.Display);
-
-    public IReadOnlyList<Diagnostic> Validate(ColorExtractSettings settings) => settings.Validate();
+        ArgumentNullException.ThrowIfNull(settings);
+        return settings.Validate();
+    }
 
     /// <summary>
     /// 编辑期显式校验：只判定已解析为常量的字段，引用/变量值留到执行期解析，
@@ -91,9 +64,7 @@ public sealed class ColorExtractTool : IToolDefinition<ColorExtractSettings, Col
     private static long? Constant(FieldSettings settings, string fieldId)
         => settings.Read(fieldId) is ConstantSetting { Value: long value } ? value : null;
 
-    public ToolCapabilities Capabilities() => new(new[] { "halcon" });
+    public override ToolCapabilities Capabilities() => new(new[] { "halcon" });
 
     public void InitializeRuntime() => HalconPlatform.Initialise();
-
-    public IToolSession<ColorExtractSettings, ColorExtractOutput> CreateSession() => new ColorExtractSession();
 }

@@ -143,7 +143,8 @@ public sealed record BlobLabelsAnnulus(double CenterX, double CenterY, double In
 /// BlobLabels 的输出对象。与 Blob 工具一致：调用成功即构造完整声明，
 /// 资源所有权随本次调用的输出作用域释放。
 /// </summary>
-public sealed class BlobLabelsOutput : IToolOutput, IDisposable, IToolResultRecordOutput, IToolResultGeometryOutput
+public sealed class BlobLabelsOutput : IToolOutput, IDisposable, IToolResultRecordOutput, IToolResultGeometryOutput,
+    IToolResultOutlineOutput
 {
     private readonly IReadOnlyList<IDisposable> _owned;
     private readonly Dictionary<string, object?> _values;
@@ -159,6 +160,7 @@ public sealed class BlobLabelsOutput : IToolOutput, IDisposable, IToolResultReco
         Measurements = measurements;
         LimitMessages = limitMessages;
         ResultGeometry = geometry;
+        ResultOutline = BuildOutline(measurements, geometry.SourceFrame);
         BinaryImage = binaryImage;
         BlobImage = blobImage;
         _owned = owned.Distinct<IDisposable>(ReferenceEqualityComparer.Instance).ToArray();
@@ -171,7 +173,24 @@ public sealed class BlobLabelsOutput : IToolOutput, IDisposable, IToolResultReco
     public IReadOnlyList<BlobLabelsMeasurement> Measurements { get; }
     public IReadOnlyList<string> LimitMessages { get; }
     public ResultGeometrySnapshot ResultGeometry { get; }
+    /// <summary>系统级轮廓点（与 Blob 同一系统类型，不再走行内 contour 通道）。</summary>
+    public ResultOutlineSet? ResultOutline { get; }
     public IReadOnlyImage? BinaryImage { get; }
+    private static ResultOutlineSet? BuildOutline(IReadOnlyList<BlobLabelsMeasurement> measurements,
+        ImageFrameAddress frame)
+    {
+        var points = new List<Point2>();
+        var indices = new List<int>();
+        var scores = new List<float>();
+        for (var blob = 0; blob < measurements.Count; blob++)
+            foreach (var point in measurements[blob].Contour)
+            {
+                points.Add(point);
+                indices.Add(blob);
+                scores.Add(measurements[blob].Passed ? 0f : 2f);
+            }
+        return points.Count == 0 ? null : new ResultOutlineSet(frame, points, indices, scores);
+    }
     public IReadOnlyImage? BlobImage { get; }
     public bool IsPass => Projection.ModuleStatus != 0;
 

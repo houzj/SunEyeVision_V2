@@ -6,6 +6,7 @@ using SunEyeVision.Plugin.Wpf.Adapters.Regions;
 using SunEyeVision.Plugin.Wpf.Fields;
 using SunEyeVision.Plugin.Wpf.Presenters.Parameters;
 using SunEyeVision.Plugin.Wpf.Presenters.Regions;
+using SunEyeVision.Plugin.TemplateStudio.Views;
 using SunEyeVision.Tool.ContourMatch.Runtime;
 
 namespace SunEyeVision.Tool.ContourMatch.Wpf.Views;
@@ -43,7 +44,11 @@ public partial class ContourMatchParameterEditor : UserControl, IToolSettingsVie
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(draft);
         ArgumentNullException.ThrowIfNull(options);
-        var panel = new ContourMatchTemplatePanel(draft, options.AcceptCandidate, options.RoiFrames);
+        // 业务宿主（原厂 PanalData 的角色）+ 共用面板（原厂 FeatureMatchConfigPanal 的角色）。
+        // 面板负责列表/行内操作/预览，宿主只提供创建/载入/编辑/删除四个动作。
+        var host = new ContourMatchTemplatePanel(draft, options.AcceptCandidate, options.RoiFrames);
+        _templatePanel = host;
+        var panel = new TemplateConfigPanel(new TemplateConfigPanelModel(host));
         // 原厂特征模板页只有模板列表/预览/创建/载入/编辑/删除；训练参数（尺度模式/速度尺度/特征尺度/
         // 阈值模式/边缘阈值/链长模式/最小链长/建模类型）只在 900x534 模板配置窗口右侧，不在参数页 Tab。
         // 证据：hppyramidfeaturepatmatchdialoguistyle.xaml:879-906 + IMVSContourMatchModuAlgorithmTab.xml。
@@ -98,7 +103,8 @@ public partial class ContourMatchParameterEditor : UserControl, IToolSettingsVie
             }
         };
         Editor.Bind(draft, composed);
-        _templatePanel = panel;
+        // _templatePanel 指向业务宿主（需 Dispose）；共用面板本身不持有资源。
+        _templatePanel = host;
     }
 
     private void OnFixtureSwitchChanged() => ApplyFixtureEnabled();

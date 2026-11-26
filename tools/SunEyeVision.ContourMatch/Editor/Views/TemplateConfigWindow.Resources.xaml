@@ -6,9 +6,8 @@
     
     <ResourceDictionary>
       <s:Boolean x:Key="True">True</s:Boolean>
-      <local:DoubleToFloatConvert x:Key="cvtDoubleToFloat" />
-      <local:FloatToIntConvert x:Key="cvtFloatToInt" />
-      <local:SelectedIndexToBoolConverter x:Key="cvtBoolToInt" />
+      <!-- cvtDoubleToFloat / cvtFloatToInt / cvtBoolToInt 由
+           TemplateWindowButtonStyles.xaml（上方 MergedDictionaries）提供，此处不再重复定义。 -->
       <Style x:Key="ComboxStyleBtnSign" TargetType="{x:Type ToggleButton}">
         <Setter Property="FrameworkElement.OverridesDefaultStyle" Value="True" />
         <Setter Property="IsTabStop" Value="False" />
@@ -266,47 +265,6 @@
           </Setter.Value>
         </Setter>
       </Style>
-      <Style x:Key="ImageButtonStyleK" TargetType="{x:Type Button}">
-        <Setter Property="Width" Value="28" />
-        <Setter Property="Height" Value="28" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="{TemplateBinding Control.Background}" BorderBrush="#00FFFFFF" BorderThickness="0">
-                <ContentPresenter />
-              </Border>
-              <ControlTemplate.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
-                </Trigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-      <Style x:Key="ImageButtonStyle3" TargetType="{x:Type Button}">
-        <Setter Property="Width" Value="32" />
-        <Setter Property="Height" Value="32" />
-        <Setter Property="Background" Value="#00FFFFFF" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="-4" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
-                <ContentPresenter Name="con" />
-              </Border>
-              <ControlTemplate.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
-                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
-                </Trigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
       <Style x:Key="EditButton" TargetType="{x:Type Button}">
         <Setter Property="Width" Value="28" />
         <Setter Property="Height" Value="18" />
@@ -333,59 +291,6 @@
             </ControlTemplate>
           </Setter.Value>
         </Setter>
-      </Style>
-      <Style x:Key="showCrossToggleButtonStyle" TargetType="{x:Type ToggleButton}">
-        <Setter Property="Background" Value="#00FFFFFF" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type ToggleButton}">
-              <Border Name="iBorder" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
-                <ContentPresenter Name="con" HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-              <ControlTemplate.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
-                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
-                </Trigger>
-                <Trigger Property="ToggleButton.IsChecked" Value="True">
-                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                  <Setter TargetName="con" Property="ContentPresenter.Content">
-                    <Setter.Value>
-                      <Image Stretch="None" Source="/SunEyeVision.Plugin.Wpf;component/Themes/Assets/Native/Composition/ParameterPresentation/resources/ic_橡皮擦2_disable.png" />
-                    </Setter.Value>
-                  </Setter>
-                </Trigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-        <Setter Property="ButtonBase.ClickMode" Value="Press" />
-      </Style>
-      <Style x:Key="showCrossToggleButtonStyle2" TargetType="{x:Type ToggleButton}">
-        <Setter Property="Width" Value="28" />
-        <Setter Property="Height" Value="28" />
-        <Setter Property="Background" Value="#00FFFFFF" />
-        <Setter Property="FrameworkElement.UseLayoutRounding" Value="True" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type ToggleButton}">
-              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
-                <ContentPresenter Name="con" />
-              </Border>
-              <ControlTemplate.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
-                </Trigger>
-                <Trigger Property="ToggleButton.IsChecked" Value="False">
-                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
-                </Trigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-        <Setter Property="ButtonBase.ClickMode" Value="Press" />
       </Style>
       <Style x:Key="TextButtonStyle" TargetType="{x:Type Button}">
         <Setter Property="Template">
@@ -433,49 +338,6 @@
                   </MultiTrigger.Conditions>
                   <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
                 </MultiTrigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-      <Style x:Key="setCrossToggleButtonStyle" TargetType="{x:Type ToggleButton}">
-        <Setter Property="FrameworkElement.FocusVisualStyle" Value="{x:Null}" />
-        <Setter Property="Width" Value="12" />
-        <Setter Property="Height" Value="32" />
-        <Setter Property="Background" Value="#00FFFFFF" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type ToggleButton}">
-              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="0" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
-                <Image Name="ImageBackground" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" />
-              </Border>
-              <ControlTemplate.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
-                </Trigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-      <Style x:Key="AppToolButtonStyle" TargetType="{x:Type Button}">
-        <Setter Property="Width" Value="32" />
-        <Setter Property="Height" Value="32" />
-        <Setter Property="Background" Value="#00FFFFFF" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Border Name="iBorder" Padding="{TemplateBinding Control.Padding}" Margin="-4" Background="#00FFFFFF" BorderBrush="#00FFFFFF" BorderThickness="0">
-                <ContentPresenter Name="con" />
-              </Border>
-              <ControlTemplate.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="iBorder" Property="FrameworkElement.Cursor" Value="Hand" />
-                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                  <Setter TargetName="con" Property="ContentPresenter.Content" Value="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}" />
-                </Trigger>
               </ControlTemplate.Triggers>
             </ControlTemplate>
           </Setter.Value>

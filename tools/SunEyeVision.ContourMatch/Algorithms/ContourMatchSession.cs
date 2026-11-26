@@ -114,6 +114,7 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         {
             foreach (var template in templates) modelIds.Add(template.LoadModel());
             var matches = FindAll(reduced, modelIds, templates, modelIndices, modelNames, settings, templateName, cancellation);
+            matches = KeepCandidatesInsideSearchRegion(matches, search);
             var judged = Judge(settings, matches);
             try
             {
@@ -244,6 +245,36 @@ public sealed class ContourMatchSession : IToolSession<ContourMatchSettings, Con
         using (area) using (row) using (column)
             if (area.Length == 0 || area.LArr.All(value => value == 0))
                 throw new ContourMatchCapabilityException("CONTOURMATCH_ROI_EMPTY", "搜索区域与图像有效域没有交集：请检查区域与位置修正。");
+    }
+
+    /// <summary>
+    /// HALCON 的 ReduceDomain 约束输入域，但某些轮廓/遮罩组合仍可能返回一个位于域外的候选。
+    /// 原厂搜索 ROI 的语义是候选匹配点必须位于有效搜索域内，因此在结果进入判定和发布前再做一次
+    /// 几何准入；被拒绝的候选立即释放，避免把域外结果显示成有效匹配。
+    /// </summary>
+    private static Candidate[] KeepCandidatesInsideSearchRegion(IReadOnlyList<Candidate> candidates, HRegion search)
+    {
+        var kept = new List<Candidate>(candidates.Count);
+        foreach (var candidate in candidates)
+        {
+            using var point = new HRegion(candidate.CenterY, candidate.CenterX, 0.5);
+            HOperatorSet.Intersection(point, search, out var overlap);
+            using (overlap)
+            using (var overlapRegion = new HRegion(overlap))
+            {
+                HOperatorSet.AreaCenter(overlapRegion, out var area, out var ignoredRow, out var ignoredColumn);
+                using (area) using (ignoredRow) using (ignoredColumn)
+                {
+                    if (area.Length > 0 && area.D > 0)
+                    {
+                        kept.Add(candidate);
+                        continue;
+                    }
+                }
+            }
+            candidate.Region.Dispose();
+        }
+        return kept.ToArray();
     }
 
     /// <summary>

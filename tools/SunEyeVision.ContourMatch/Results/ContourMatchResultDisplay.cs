@@ -42,7 +42,7 @@ public static class ContourMatchResultDisplay
         new(ContourMatchSchema.Rows, new[] { "region" }),
         new(ContourMatchSchema.Rows, new[] { "score" }),
         new(ContourMatchSchema.Rows, new[] { "judgment-passed" }),
-        outline: new(ContourMatchSchema.Rows, new[] { "outline" }),
+        // 轮廓点由系统类型（IToolResultOutlineOutput）承载，显示合同不再声明通道。
         selectedRectangleColor: new(255, 255, 0),
         centroid: new(ContourMatchSchema.Rows, new[] { "match-point" }));
 
@@ -62,7 +62,7 @@ public static class ContourMatchResultDisplay
                 : FieldEditModes.Constant;
             var port = new Port(id, type, EditModes: modes);
             result.Add(new(port, new(id, label, section, 10_000 + order++,
-                type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar)
+                type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.FromPort(type, type.Shape == ValueShape.Record ? FieldEditorKind.Record : FieldEditorKind.Scalar))
             {
                 Layout = new FieldLayout("结果显示", section, Minimum: minimum, Maximum: maximum,
                     Increment: increment ?? 1, DecimalPlaces: type == DataType.Number ? decimals : 0,

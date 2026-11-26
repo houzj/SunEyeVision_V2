@@ -183,8 +183,9 @@ public static class GrayMatchFields
             // 运行参数（原件 VA 版 33 项 ParamItem）
             N("MinScore", nameof(GrayMatchSettings.MinScore), "最小分数", RunSection, 0.5, 0, 1),
             I("MaxMatchNum", nameof(GrayMatchSettings.MaxMatchCount), "最大匹配个数", RunSection, 1, 1, 50_000),
-            I("MaxOverlap", nameof(GrayMatchSettings.MaxOverlap), "最大重叠率", RunSection, 40, 0, 100),
-            I("Polarity", nameof(GrayMatchSettings.Polarity), "极性", RunSection, 1, 0, 1),
+            // 证据 IMVSGrayMatchModuAlgorithmTab.xml：Run Params 页 Expand 之后的三项折叠在高级区。
+            I("MaxOverlap", nameof(GrayMatchSettings.MaxOverlap), "最大重叠率", RunSection, 40, 0, 100, advanced: true),
+            I("Polarity", nameof(GrayMatchSettings.Polarity), "极性", RunSection, 1, 0, 1, advanced: true),
             I("MatchingPolarity", nameof(GrayMatchSettings.MatchingPolarity), "匹配极性", RunSection, 1, 0, 1),
             I("AngleStart", nameof(GrayMatchSettings.AngleStart), "角度下限", RunSection, -45, -180, 180,
                 pair: nameof(GrayMatchSettings.AngleEnd), pairLabel: "角度范围"),
@@ -194,7 +195,7 @@ public static class GrayMatchFields
                 new[] { "分数降序", "角度降序", "X升序", "Y升序", "X升序·Y升序", "Y升序·X升序" }),
             I("TimeOut", nameof(GrayMatchSettings.TimeOut), "超时时间(毫秒)", RunSection, 0, 0, 10_000, advanced: true),
             I("EndPyramidLevel", nameof(GrayMatchSettings.EndPyramidLevel), "匹配结束层", RunSection, 0, 0, 8),
-            B("UseMatchAllMode", nameof(GrayMatchSettings.UseMatchAllMode), "全部搜索模式", RunSection, false, advanced: true),
+            B("UseMatchAllMode", nameof(GrayMatchSettings.UseMatchAllMode), "全部搜索模式", RunSection, false, advanced: false),
             B("OKWhenNumIsZero", nameof(GrayMatchSettings.OkWhenCountIsZero), "个数为0时判定OK", RunSection, false),
 
             // 结果判断：数量限位
@@ -205,12 +206,13 @@ public static class GrayMatchFields
                 when: nameof(GrayMatchSettings.CountLimitEnabled)),
 
             // 结果判断：角度/分数限位
-            B("AngleLimitEnable", nameof(GrayMatchSettings.AngleLimitEnabled), "角度判断", JudgeSection, false, advanced: true),
+            B("AngleLimitEnable", nameof(GrayMatchSettings.AngleLimitEnabled), "角度判断", JudgeSection, false, advanced: false),
             N("AngleLimitLow", nameof(GrayMatchSettings.AngleLimitLow), "角度下限", JudgeSection, -180, -180, 180,
-                when: nameof(GrayMatchSettings.AngleLimitEnabled), pair: nameof(GrayMatchSettings.AngleLimitHigh), pairLabel: "角度范围", advanced: true),
+                when: nameof(GrayMatchSettings.AngleLimitEnabled), pair: nameof(GrayMatchSettings.AngleLimitHigh), pairLabel: "角度范围", advanced: false),
             N("AngleLimitHigh", nameof(GrayMatchSettings.AngleLimitHigh), "角度上限", JudgeSection, 180, -180, 180,
-                when: nameof(GrayMatchSettings.AngleLimitEnabled), advanced: true),
-            B("ScoreLimitEnable", nameof(GrayMatchSettings.ScoreLimitEnabled), "分数判断", JudgeSection, false),
+                when: nameof(GrayMatchSettings.AngleLimitEnabled), advanced: false),
+            // 证据同上：ResultShow 页 Expand 之后的五个判定开关折叠在高级区。
+            B("ScoreLimitEnable", nameof(GrayMatchSettings.ScoreLimitEnabled), "分数判断", JudgeSection, false, advanced: true),
             N("ScoreLimitLow", nameof(GrayMatchSettings.ScoreLimitLow), "分数下限", JudgeSection, 0, 0, 1,
                 when: nameof(GrayMatchSettings.ScoreLimitEnabled), pair: nameof(GrayMatchSettings.ScoreLimitHigh), pairLabel: "分数范围"),
             N("ScoreLimitHigh", nameof(GrayMatchSettings.ScoreLimitHigh), "分数上限", JudgeSection, 1, 0, 1,
@@ -219,24 +221,24 @@ public static class GrayMatchFields
             // 结果判断：匹配点 / Box 点限位
             B("MatchPointXLimitEnable", nameof(GrayMatchSettings.MatchPointXLimitEnabled), "匹配点X判断", JudgeSection, false, advanced: true),
             N("MatchPointXLimitLow", nameof(GrayMatchSettings.MatchPointXLimitLow), "匹配点X下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.MatchPointXLimitEnabled), pair: nameof(GrayMatchSettings.MatchPointXLimitHigh), pairLabel: "匹配点X范围", advanced: true),
+                when: nameof(GrayMatchSettings.MatchPointXLimitEnabled), pair: nameof(GrayMatchSettings.MatchPointXLimitHigh), pairLabel: "匹配点X范围", advanced: false),
             N("MatchPointXLimitHigh", nameof(GrayMatchSettings.MatchPointXLimitHigh), "匹配点X上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.MatchPointXLimitEnabled), advanced: true),
+                when: nameof(GrayMatchSettings.MatchPointXLimitEnabled), advanced: false),
             B("MatchPointYLimitEnable", nameof(GrayMatchSettings.MatchPointYLimitEnabled), "匹配点Y判断", JudgeSection, false, advanced: true),
             N("MatchPointYLimitLow", nameof(GrayMatchSettings.MatchPointYLimitLow), "匹配点Y下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.MatchPointYLimitEnabled), pair: nameof(GrayMatchSettings.MatchPointYLimitHigh), pairLabel: "匹配点Y范围", advanced: true),
+                when: nameof(GrayMatchSettings.MatchPointYLimitEnabled), pair: nameof(GrayMatchSettings.MatchPointYLimitHigh), pairLabel: "匹配点Y范围", advanced: false),
             N("MatchPointYLimitHigh", nameof(GrayMatchSettings.MatchPointYLimitHigh), "匹配点Y上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.MatchPointYLimitEnabled), advanced: true),
+                when: nameof(GrayMatchSettings.MatchPointYLimitEnabled), advanced: false),
             B("BoxPointXLimitEnable", nameof(GrayMatchSettings.BoxPointXLimitEnabled), "Box点X判断", JudgeSection, false, advanced: true),
             N("BoxPointXLimitLow", nameof(GrayMatchSettings.BoxPointXLimitLow), "Box点X下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.BoxPointXLimitEnabled), pair: nameof(GrayMatchSettings.BoxPointXLimitHigh), pairLabel: "Box点X范围", advanced: true),
+                when: nameof(GrayMatchSettings.BoxPointXLimitEnabled), pair: nameof(GrayMatchSettings.BoxPointXLimitHigh), pairLabel: "Box点X范围", advanced: false),
             N("BoxPointXLimitHigh", nameof(GrayMatchSettings.BoxPointXLimitHigh), "Box点X上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.BoxPointXLimitEnabled), advanced: true),
+                when: nameof(GrayMatchSettings.BoxPointXLimitEnabled), advanced: false),
             B("BoxPointYLimitEnable", nameof(GrayMatchSettings.BoxPointYLimitEnabled), "Box点Y判断", JudgeSection, false, advanced: true),
             N("BoxPointYLimitLow", nameof(GrayMatchSettings.BoxPointYLimitLow), "Box点Y下限", JudgeSection, -99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.BoxPointYLimitEnabled), pair: nameof(GrayMatchSettings.BoxPointYLimitHigh), pairLabel: "Box点Y范围", advanced: true),
+                when: nameof(GrayMatchSettings.BoxPointYLimitEnabled), pair: nameof(GrayMatchSettings.BoxPointYLimitHigh), pairLabel: "Box点Y范围", advanced: false),
             N("BoxPointYLimitHigh", nameof(GrayMatchSettings.BoxPointYLimitHigh), "Box点Y上限", JudgeSection, 99_999, -99_999, 99_999,
-                when: nameof(GrayMatchSettings.BoxPointYLimitEnabled), advanced: true)
+                when: nameof(GrayMatchSettings.BoxPointYLimitEnabled), advanced: false)
         };
         var names = fields.Select(field => field.Name).ToArray();
         if (names.Distinct(StringComparer.Ordinal).Count() != names.Length)
@@ -269,9 +271,10 @@ public static class GrayMatchFields
                 PairMinimum: field.PairWith is null ? null : field.PairMinimum,
                 PairMaximum: field.PairWith is null ? null : field.PairMaximum,
                 PairDisplayName: field.PairLabel);
+            var displayType = DisplayTypeOf(field);
             presentations.Add(new FieldPresentation(field.Id, field.Label, field.Section, index,
                 field.Choices.Count == 0 ? FieldEditorKind.Scalar : FieldEditorKind.Choice,
-                field.Choices, field.ChoiceLabels) { Layout = layout });
+                field.Choices, field.ChoiceLabels, displayType) { Layout = layout });
         }
         return new ToolSchema(ports, Array.Empty<Port>(), new ToolPresentation(presentations));
     }
@@ -280,7 +283,20 @@ public static class GrayMatchFields
     private static object VisibilityValue(GrayMatchFieldSpec controller)
         => controller.Type.IsEnum ? "Manual" : true;
 
-    private static TypeRef PortType(GrayMatchFieldSpec field)
+    /// <summary>
+    /// 原厂 DisplayType：选项→Enumeration；成对→Bettween；布尔→Boolean；文本→String；整数/浮点→Integer/Float。
+    /// manifest 复用同一规则，避免两处各写一份。
+    /// </summary>
+    internal static string DisplayTypeOf(GrayMatchFieldSpec field)
+        => field.Choices.Count != 0 ? DeclaredFieldTemplateKey.Enumeration
+            : field.PairWith is not null
+                ? field.Type == typeof(int) ? DeclaredFieldTemplateKey.IntegerBettween : DeclaredFieldTemplateKey.FloatBettween
+            : field.Type == typeof(bool) ? DeclaredFieldTemplateKey.Boolean
+            : field.Type == typeof(string) ? DeclaredFieldTemplateKey.String
+            : field.Type == typeof(int) ? DeclaredFieldTemplateKey.Integer
+            : DeclaredFieldTemplateKey.Float;
+
+    internal static TypeRef PortType(GrayMatchFieldSpec field)
         => field.Type == typeof(bool) ? DataType.Boolean
             : field.Type == typeof(int) ? DataType.Integer
             : field.Type == typeof(double) ? DataType.Number

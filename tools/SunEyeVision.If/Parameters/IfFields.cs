@@ -40,7 +40,7 @@ public static class IfFields
             // The original value is owned by IfBranchModuleDynamicIO. It is persisted through
             // the tool settings contract here, while the editor row is supplied by the native
             // IfBranch panel and suppressed from the generic field list.
-            new FieldPresentation(BranchText,"条件分支文本","内部",int.MaxValue,FieldEditorKind.Scalar)
+            new FieldPresentation(BranchText,"条件分支文本","内部",int.MaxValue,FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.String)
             {
                 Layout=new(Page,"内部")
             }
@@ -54,20 +54,20 @@ public static class IfFields
             inputs.Add(new Port(SourceField(index),Number,Required:false,Nullable:true,EditModes:FieldEditModes.Reference));
             inputs.Add(new Port(MinimumField(index),Number,EditModes:FieldEditModes.Constant));
             inputs.Add(new Port(MaximumField(index),Number,EditModes:FieldEditModes.Constant));
-            fields.Add(new FieldPresentation(EnabledField(index),"启用",section,index*10,FieldEditorKind.Scalar)
+            fields.Add(new FieldPresentation(EnabledField(index),"启用",section,index*10,FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.BooleanTips)
             {
                 Layout=new(Page,section,AllowReference:false,BooleanTips:new("已启用","未启用"))
             });
-            fields.Add(new FieldPresentation(SourceField(index),"取值来源",section,index*10+1,FieldEditorKind.Scalar)
+            fields.Add(new FieldPresentation(SourceField(index),"取值来源",section,index*10+1,FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.Reference)
             {
                 Layout=new(Page,section,VisibleWhen:visible)
             });
-            fields.Add(new FieldPresentation(MinimumField(index),"有效区间",section,index*10+2,FieldEditorKind.Scalar)
+            fields.Add(new FieldPresentation(MinimumField(index),"有效区间",section,index*10+2,FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.FloatBettween)
             {
                 Layout=new(Page,section,VisibleWhen:visible,PairWith:MaximumField(index),AllowReference:false,
                     Minimum:-RangeLimit,Maximum:RangeLimit,PairDisplayName:"有效区间")
             });
-            fields.Add(new FieldPresentation(MaximumField(index),"有效区间上限",section,index*10+3,FieldEditorKind.Scalar)
+            fields.Add(new FieldPresentation(MaximumField(index),"有效区间上限",section,index*10+3,FieldEditorKind.Scalar, null, null, DeclaredFieldTemplateKey.Float)
             {
                 Layout=new(Page,section,VisibleWhen:visible,AllowReference:false,Minimum:-RangeLimit,Maximum:RangeLimit)
             });

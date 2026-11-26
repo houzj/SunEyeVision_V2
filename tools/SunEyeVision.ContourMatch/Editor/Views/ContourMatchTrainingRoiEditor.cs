@@ -133,7 +133,7 @@ internal sealed class ContourMatchTrainingRoiEditor : IDisposable
 
         var presentations = new List<FieldPresentation>
         {
-            new(ImageFieldId, "输入图像", "样本区域", 0, FieldEditorKind.Image)
+            new(ImageFieldId, "输入图像", "样本区域", 0, FieldEditorKind.Image, null, null, DeclaredFieldTemplateKey.ComposedSlot)
             { Layout = new FieldLayout("样本区域", "样本区域", AllowReference: true) }
         };
         return new ToolSchema(ports, Array.Empty<Port>(), new ToolPresentation(presentations), ImageFieldId);

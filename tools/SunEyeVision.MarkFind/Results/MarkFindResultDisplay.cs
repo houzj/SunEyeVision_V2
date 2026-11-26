@@ -80,7 +80,9 @@ public static class MarkFindResultDisplay
         GraphicFields(Match, "匹配结果", ok);
         GraphicFields(Location, "匹配位置", ng, width: 1);
         GraphicFields(Inspection, "传感器区域", PresentationDeclarations.Color(0, 0, 255));
-        Add(Field(Outline, "visible"), "匹配轮廓点", "图像显示", DataType.Boolean, true);
+        // 原件 Display.xml 的 MatchOutlinePoints 是 outlinepoint（带 okcolor/ngcolor/opacity/linewidth），
+        // 属于图形组而不是纯可见性项；此前只声明了眼睛开关，颜色硬编码。
+        GraphicFields(Outline, "匹配轮廓点", ok, opacity: 1, width: 2);
         GraphicFields(ReferencePoint, "基准点", ok, width: 1);
         GraphicFields(RunPoint, "运行点", ng, width: 1);
         GraphicFields(Mask, "盲区", PresentationDeclarations.Color(255, 84, 0), .5);
@@ -141,7 +143,8 @@ public static class MarkFindResultDisplay
             Style(Inspection) with { ShowMeasurements = true },
             Style(Mask) with { Fill = new(255, 84, 0) },
             null,
-            new(Read<bool>(Field(Outline, "visible")), new(102, 255, 0), new(255, 0, 0)),
+            new(Read<bool>(Field(Outline, "visible")), Color(Outline, "ok"), Color(Outline, "ng"),
+                Number(Outline, "opacity"), Number(Outline, "width")),
             null,
             Style(ReferencePoint) with { FixedJudgment = true, PointLabel = "Fixture BasePoint" },
             Style(RunPoint) with { FixedJudgment = true, PointLabel = "Fixture RunPoint" },
